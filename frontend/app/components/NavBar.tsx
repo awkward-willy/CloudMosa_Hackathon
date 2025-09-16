@@ -2,7 +2,7 @@
 
 import { Box, Flex, IconButton, Text, Drawer, Portal, Button } from "@chakra-ui/react";
 import { FaBars } from "react-icons/fa6";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 
 export default function NavBar() {
   const triggerRef = useRef<HTMLButtonElement | null>(null);
