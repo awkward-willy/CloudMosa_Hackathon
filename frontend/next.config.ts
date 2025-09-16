@@ -5,8 +5,8 @@ const isProd = process.env.NODE_ENV === 'production';
 const nextConfig: NextConfig = {
   output: 'export',
   trailingSlash: true,
-  assetPrefix: isProd ? '/cloudphone-2025meichuhackathon-demo/' : '',
-  basePath: isProd ? '/cloudphone-2025meichuhackathon-demo' : '',
+  assetPrefix: isProd ? '/CloudMosa_Hackathon/' : '',
+  basePath: isProd ? '/CloudMosa_Hackathon' : '',
   images: {
     unoptimized: true,
   },
