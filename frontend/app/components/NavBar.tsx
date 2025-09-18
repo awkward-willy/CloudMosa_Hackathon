@@ -3,18 +3,14 @@
 import { Box, Flex, IconButton, Text, Drawer, Portal, Button } from "@chakra-ui/react";
 import { FaBars } from "react-icons/fa6";
 import { useRef } from "react";
+import { Link as ChakraLink } from "@chakra-ui/react"
+import NextLink from "next/link"
+import { useNavigation } from "./NavigationContext";
+import { menuItems } from "./routes";
 
 export default function NavBar() {
   const triggerRef = useRef<HTMLButtonElement | null>(null);
-
-    const menuItems = [
-    { label: "Expense Tracker", action: () => alert("Go to Expense Tracker") },
-    { label: "Financial Analysis", action: () => alert("Go to Financial Analysis") },
-    { label: "Currency Converter", action: () => alert("Go to Currency Converter") },
-    { label: "Investment Calculator", action: () => alert("Go to Investment Calculator") },
-    { label: "Financial Tips", action: () => alert("Go to Financial Tips") },
-    { label: "About", action: () => alert("Go to About") },
-  ];
+  const { isNavOpen, openNav, closeNav, selectedIndex } = useNavigation();
 
   return (
     <>
@@ -31,7 +27,9 @@ export default function NavBar() {
         boxShadow="md"
       >
         <Flex align="center" h="100%" px={2}>
-          <Drawer.Root placement="start">
+          <Drawer.Root placement="start" open={isNavOpen} onOpenChange={(details) => {
+            if (details.open) openNav(); else closeNav();
+          }}>
             <Drawer.Trigger asChild>
               <IconButton
                 ref={triggerRef}
@@ -48,16 +46,18 @@ export default function NavBar() {
               <Drawer.Backdrop />
               <Drawer.Positioner>
                 <Drawer.Content bg="green.600">
-                  <Drawer.Header/>
+                  <Drawer.Header />
                   <Drawer.Body>
                     <Box>
-                        {menuItems.map((item) => (
+                      {menuItems.map((item, idx) => (
                         <Box key={item.label} mb={2}>
-                            <Button color="white" bg="none">
-                            {item.label}
-                            </Button>
+                          <Button color="white" bg={idx === selectedIndex ? 'green.700' : 'none'}>
+                            <ChakraLink asChild>
+                              <NextLink href={item.url}>{item.label}</NextLink>
+                            </ChakraLink>
+                          </Button>
                         </Box>
-                        ))}
+                      ))}
                     </Box>
                   </Drawer.Body>
                   <Drawer.Footer />
@@ -68,9 +68,15 @@ export default function NavBar() {
             </Portal>
           </Drawer.Root>
 
-          <Text fontSize="16px" fontWeight="bold">
-            My Finance App
-          </Text>
+
+          <ChakraLink asChild>
+            <NextLink href="/">
+              <Text fontSize="16px" fontWeight="bold" color="white">
+                My Finance App
+              </Text>
+            </NextLink>
+          </ChakraLink>
+
         </Flex>
       </Box>
     </>
