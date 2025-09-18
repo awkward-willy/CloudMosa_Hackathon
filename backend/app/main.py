@@ -19,7 +19,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.app_name,
     version="0.1.0",
-    description=("FastAPI backend for MeiChu Hackathon"),
+    description=settings.app_name,
     lifespan=lifespan,
 )
 
@@ -32,4 +32,4 @@ app.include_router(transactions.router, prefix="/api")
 
 @app.get("/api")
 async def root():
-    return {"message": "Personal Finance API is running"}
+    return {"message": f"{settings.app_name} is running"}
