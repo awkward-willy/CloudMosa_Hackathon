@@ -31,3 +31,6 @@ dev = [
 
 [tool.flake8]
 exclude = [".git", "__pycache__", ".venv"]
+
+[tool.isort]
+profile = "black"

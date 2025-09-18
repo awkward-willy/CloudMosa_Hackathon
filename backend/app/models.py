@@ -59,8 +59,4 @@ class Transaction(Base):
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="transactions")
 
-    __table_args__ = (
-        CheckConstraint(
-            "amount > 0", name="check_positive_amount"
-        ),
-    )
+    __table_args__ = (CheckConstraint("amount > 0", name="check_positive_amount"),)
