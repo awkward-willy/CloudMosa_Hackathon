@@ -1,0 +1,5 @@
+components/ui/*
+package.json
+package-lock.json
+tsconfig.json
+next.config.ts

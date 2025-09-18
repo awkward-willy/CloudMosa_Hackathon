@@ -1,15 +1,11 @@
-import Keypad from "./components/Keypad";
+import Keypad from './components/Keypad';
 
 export default function Home() {
   return (
-    <div className="mx-auto p-2 min-h-screen flex flex-col justify-center items-center text-center">
-      <main className="flex-1 flex flex-col justify-center items-center space-y-4">
-        <h1 className="text-lg font-bold text-gray-600">
-          Keep Your Coins in Mind!
-        </h1>
-        <p className="text-sm text-gray-500 leading-tight">
-          It&apos;s a demo page.
-        </p>
+    <div className="mx-auto flex min-h-screen flex-col items-center justify-center p-2 text-center">
+      <main className="flex flex-1 flex-col items-center justify-center space-y-4">
+        <h1 className="text-lg font-bold text-gray-600">Keep Your Coins in Mind!</h1>
+        <p className="text-sm leading-tight text-gray-500">It&apos;s a demo page.</p>
         <Keypad />
       </main>
     </div>

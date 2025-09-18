@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+
 import { useNavigation } from './NavigationContext';
 
 export default function KeyboardHandler() {

@@ -1,12 +1,14 @@
-"use client";
+'use client';
 
-import { Box, Flex, IconButton, Text, Drawer, Portal, Button } from "@chakra-ui/react";
-import { FaBars } from "react-icons/fa6";
-import { useRef } from "react";
-import { Link as ChakraLink } from "@chakra-ui/react"
-import NextLink from "next/link"
-import { useNavigation } from "./NavigationContext";
-import { menuItems } from "./routes";
+import { Box, Button, Drawer, Flex, IconButton, Portal, Text } from '@chakra-ui/react';
+import { Link as ChakraLink } from '@chakra-ui/react';
+
+import NextLink from 'next/link';
+import { useRef } from 'react';
+import { FaBars } from 'react-icons/fa6';
+
+import { useNavigation } from './NavigationContext';
+import { menuItems } from './routes';
 
 export default function NavBar() {
   const triggerRef = useRef<HTMLButtonElement | null>(null);
@@ -27,18 +29,16 @@ export default function NavBar() {
         boxShadow="md"
       >
         <Flex align="center" h="100%" px={2}>
-          <Drawer.Root placement="start" open={isNavOpen} onOpenChange={(details) => {
-            if (details.open) openNav(); else closeNav();
-          }}>
+          <Drawer.Root
+            placement="start"
+            open={isNavOpen}
+            onOpenChange={(details) => {
+              if (details.open) openNav();
+              else closeNav();
+            }}
+          >
             <Drawer.Trigger asChild>
-              <IconButton
-                ref={triggerRef}
-                aria-label="Open menu"
-                variant="ghost"
-                color="white"
-                fontSize="20px"
-                mr={2}
-              >
+              <IconButton ref={triggerRef} aria-label="Open menu" variant="ghost" color="white" fontSize="20px" mr={2}>
                 <FaBars />
               </IconButton>
             </Drawer.Trigger>
@@ -61,13 +61,11 @@ export default function NavBar() {
                     </Box>
                   </Drawer.Body>
                   <Drawer.Footer />
-                  <Drawer.CloseTrigger asChild>
-                  </Drawer.CloseTrigger>
+                  <Drawer.CloseTrigger asChild></Drawer.CloseTrigger>
                 </Drawer.Content>
               </Drawer.Positioner>
             </Portal>
           </Drawer.Root>
-
 
           <ChakraLink asChild>
             <NextLink href="/">
@@ -76,7 +74,6 @@ export default function NavBar() {
               </Text>
             </NextLink>
           </ChakraLink>
-
         </Flex>
       </Box>
     </>

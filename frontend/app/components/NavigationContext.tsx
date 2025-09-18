@@ -1,7 +1,8 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { createContext, ReactNode, useContext, useState } from 'react';
+
 import { menuItems } from './routes';
 
 interface NavigationContextType {
@@ -104,30 +105,32 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <NavigationContext.Provider value={{
-      leftHighlighted,
-      rightHighlighted,
-      centerHighlighted,
-      upHighlighted,
-      downHighlighted,
-      leftKeyHighlighted,
-      rightKeyHighlighted,
-      isNavOpen,
-      selectedIndex,
-      highlightLeft,
-      highlightRight,
-      highlightCenter,
-      highlightUp,
-      highlightDown,
-      highlightLeftKey,
-      highlightRightKey,
-      openNav,
-      closeNav,
-      toggleNav,
-      moveSelectionUp,
-      moveSelectionDown,
-      selectCurrent
-    }}>
+    <NavigationContext.Provider
+      value={{
+        leftHighlighted,
+        rightHighlighted,
+        centerHighlighted,
+        upHighlighted,
+        downHighlighted,
+        leftKeyHighlighted,
+        rightKeyHighlighted,
+        isNavOpen,
+        selectedIndex,
+        highlightLeft,
+        highlightRight,
+        highlightCenter,
+        highlightUp,
+        highlightDown,
+        highlightLeftKey,
+        highlightRightKey,
+        openNav,
+        closeNav,
+        toggleNav,
+        moveSelectionUp,
+        moveSelectionDown,
+        selectCurrent,
+      }}
+    >
       {children}
     </NavigationContext.Provider>
   );
