@@ -1,21 +1,13 @@
 from graph.agent_graph import build_graph
 
 def main():
-    # build raw graph
-    g = build_graph()
-    # compile it
-    compiled = g.compile()
-
-    # Save PNG
-    out_path = "agent_graph.png"
-    with open(out_path, "wb") as f:
-        f.write(compiled.get_graph().draw_mermaid_png())
-    print(f"Graph saved to {out_path}")
-
-    # Save Mermaid source as well
-    with open("agent_graph.mmd", "w") as f:
-        f.write(compiled.get_graph().draw_mermaid())
-    print("Mermaid source saved to agent_graph.mmd")
+    g = build_graph().compile()
+    # Save Mermaid source only
+    out_path = "agent_graph.mmd"
+    with open(out_path, "w") as f:
+        f.write(g.get_graph().draw_mermaid())
+    print(f"Mermaid source saved to {out_path}")
+    print("Open this file in https://mermaid.live to view the diagram.")
 
 if __name__ == "__main__":
     main()
