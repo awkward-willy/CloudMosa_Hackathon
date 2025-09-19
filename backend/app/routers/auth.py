@@ -12,7 +12,7 @@ from app.database import get_db
 from app.models import User
 from app.schemas import User as UserSchema
 from app.schemas import UserLogin
-from app.security import create_access_token, verify_password
+from app.security import create_access_token, verify_password, decode_access_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -50,9 +50,9 @@ async def get_current_user(
         scheme, token = authorization.split()
         if scheme.lower() != "bearer":
             raise credentials_exception
-        payload = jwt.decode(
-            token, settings.secret_key, algorithms=[settings.algorithm]
-        )
+        payload = decode_access_token(token)
+        if payload is None:
+            raise credentials_exception
         user_id_str = payload.get("sub")
         if user_id_str is None:
             raise credentials_exception
