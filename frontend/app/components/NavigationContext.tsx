@@ -1,6 +1,9 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
+import { createContext, ReactNode, useContext, useState } from 'react';
+
+import { menuItems } from './routes';
 
 interface NavigationContextType {
   leftHighlighted: boolean;
@@ -10,6 +13,10 @@ interface NavigationContextType {
   downHighlighted: boolean;
   leftKeyHighlighted: boolean;
   rightKeyHighlighted: boolean;
+  // Navbar state
+  isNavOpen: boolean;
+  selectedIndex: number; // index in menuItems when nav open
+  // actions
   highlightLeft: () => void;
   highlightRight: () => void;
   highlightCenter: () => void;
@@ -17,6 +24,12 @@ interface NavigationContextType {
   highlightDown: () => void;
   highlightLeftKey: () => void;
   highlightRightKey: () => void;
+  openNav: () => void;
+  closeNav: () => void;
+  toggleNav: () => void;
+  moveSelectionUp: () => void;
+  moveSelectionDown: () => void;
+  selectCurrent: () => void;
 }
 
 const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
@@ -29,6 +42,9 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   const [downHighlighted, setDownHighlighted] = useState(false);
   const [leftKeyHighlighted, setLeftKeyHighlighted] = useState(false);
   const [rightKeyHighlighted, setRightKeyHighlighted] = useState(false);
+  const [isNavOpen, setIsNavOpen] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const router = useRouter();
 
   const highlightLeft = () => {
     setLeftHighlighted(true);
@@ -65,23 +81,56 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     setTimeout(() => setRightKeyHighlighted(false), 200);
   };
 
+  const openNav = () => {
+    setIsNavOpen(true);
+  };
+  const closeNav = () => {
+    setIsNavOpen(false);
+  };
+  const toggleNav = () => {
+    setIsNavOpen((v) => !v);
+  };
+  const moveSelectionUp = () => {
+    setSelectedIndex((prev) => (prev - 1 + menuItems.length) % menuItems.length);
+  };
+  const moveSelectionDown = () => {
+    setSelectedIndex((prev) => (prev + 1) % menuItems.length);
+  };
+  const selectCurrent = () => {
+    const item = menuItems[selectedIndex];
+    if (item) {
+      router.push(item.url);
+      setIsNavOpen(false);
+    }
+  };
+
   return (
-    <NavigationContext.Provider value={{
-      leftHighlighted,
-      rightHighlighted,
-      centerHighlighted,
-      upHighlighted,
-      downHighlighted,
-      leftKeyHighlighted,
-      rightKeyHighlighted,
-      highlightLeft,
-      highlightRight,
-      highlightCenter,
-      highlightUp,
-      highlightDown,
-      highlightLeftKey,
-      highlightRightKey
-    }}>
+    <NavigationContext.Provider
+      value={{
+        leftHighlighted,
+        rightHighlighted,
+        centerHighlighted,
+        upHighlighted,
+        downHighlighted,
+        leftKeyHighlighted,
+        rightKeyHighlighted,
+        isNavOpen,
+        selectedIndex,
+        highlightLeft,
+        highlightRight,
+        highlightCenter,
+        highlightUp,
+        highlightDown,
+        highlightLeftKey,
+        highlightRightKey,
+        openNav,
+        closeNav,
+        toggleNav,
+        moveSelectionUp,
+        moveSelectionDown,
+        selectCurrent,
+      }}
+    >
       {children}
     </NavigationContext.Provider>
   );
