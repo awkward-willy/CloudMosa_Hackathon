@@ -1,25 +1,29 @@
-from typing import Dict, List
+from langchain_core.tools import tool
 import pandas as pd
 
-class Advisor:
-    def advise(self, m: Dict[str, float]) -> List[str]:
-        tips: List[str] = []
-        sr = m.get("savings_rate", 0.0)
+@tool
+def analyze_transactions(path: str) -> str:
+    """Analyze transactions from CSV and return concise baseline advice."""
+    try:
+        df = pd.read_csv(path)
+        if "amount" not in df.columns:
+            return "ERROR: column 'amount' is required"
+
+        income = df[df["amount"] > 0]["amount"].sum()
+        expense = -df[df["amount"] < 0]["amount"].sum()
+        savings = income - expense
+        sr = (savings / income) if income > 0 else -1.0
+
+        tips = []
         if sr < 0.2:
             tips.append(
-                f"Savings rate {sr:.1%} is below the 20% target. "
-                "Set up an automatic transfer of at least 10% of income."
+                f"Savings rate {sr:.1%} is below 20% target. Automate at least 10% transfers."
             )
-        food_spend = -m.get("cat::Food", 0.0)
-        if food_spend > 0.25 * m.get("expense", 1):
-            tips.append(
-                "Food spending exceeds 25% of total expenses. "
-                "Plan meals or buy in bulk to cut 10%."
-            )
-        shopping_spend = -m.get("cat::Shopping", 0.0)
-        if shopping_spend > 0.15 * m.get("expense", 1):
-            tips.append(
-                "Shopping exceeds 15% of total expenses. "
-                "Introduce a 30-day cooling-off rule."
-            )
-        return tips
+        if expense > income:
+            tips.append("Expenses exceed income. Cut non-essential categories by 20-30%.")
+        if not tips:
+            tips.append("Finances appear stable. Maintain savings rate >= 20%.")
+
+        return " | ".join(tips)
+    except Exception as e:
+        return f"ERROR: {e}"

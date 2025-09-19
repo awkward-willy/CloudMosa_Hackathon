@@ -1,72 +1,104 @@
 from __future__ import annotations
-import os, time, uuid
+import os
+from typing import Sequence
 from dotenv import load_dotenv
-from langgraph.graph import StateGraph, START, END
-from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.messages import (
+    HumanMessage,
+    SystemMessage,
+    ToolMessage,
+    BaseMessage,
+    AIMessage,
+)
+from langgraph.graph import StateGraph, END
+from langgraph.prebuilt import ToolNode
 from state import AgentState
-from tools.tx_loader import load_csv
-from tools.advisor import Advisor
+
+from langchain_google_genai import ChatGoogleGenerativeAI
+
+from tools.tx_loader import load_transactions
+from tools.advisor import analyze_transactions
+from tools.memory_tools import memory_get, memory_set, memory_append
 
 load_dotenv()
-api_key = os.getenv("GEMINI_API_KEY")
-model_id = os.getenv("MODEL_ID", "gemini-1.5-flash")
 
-llm = ChatGoogleGenerativeAI(
-    model=model_id,
-    google_api_key=api_key,
-    temperature=0.2
+
+def _build_llm():
+    model_id = os.getenv("MODEL_ID", "gemini-1.5-flash")
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise RuntimeError("GEMINI_API_KEY is not set.")
+    return ChatGoogleGenerativeAI(
+        model=model_id,
+        google_api_key=api_key,
+        temperature=0.2,
+    )
+
+
+tools = [
+    load_transactions,
+    analyze_transactions,
+    memory_get,
+    memory_set,
+    memory_append,
+]
+
+_llm = _build_llm()
+_bound_llm = _llm.bind_tools(tools)
+
+
+def our_agent(state: AgentState) -> AgentState:
+    system = SystemMessage(
+        content=(
+            "You are a concise personal finance assistant.\n"
+            "- On the first turn, call memory_get('profile') and memory_get('last_summary') if available.\n"
+            "- If the user does not specify a CSV path, always use 'data/sample_transactions.csv' as the default.\n"
+            "- Use tools to load_transactions(path) and analyze_transactions(path) to produce advice.\n"
+            "- After producing suggestions, update long-term memory via memory_append('advice_history', ...)"
+            " and memory_set('last_summary', ...).\n"
+            "- Provide 3-5 numbered, actionable bullet points under 150 words."
+        )
+    )
+
+    all_messages: Sequence[BaseMessage] = [system] + list(state["messages"])
+    response = _bound_llm.invoke(all_messages)
+    return {"messages": list(state["messages"]) + [response]}
+
+
+def route_after_agent(state: AgentState) -> str:
+    msgs = list(state["messages"])
+    if not msgs:
+        return "end"
+    last = msgs[-1]
+    if isinstance(last, AIMessage) and getattr(last, "tool_calls", None):
+        return "tools"
+    return "end"
+
+
+def should_continue_after_tools(state: AgentState) -> str:
+    return "agent"
+
+
+graph = StateGraph(AgentState)
+graph.add_node("agent", our_agent)
+graph.add_node("tools", ToolNode(tools))
+
+graph.set_entry_point("agent")
+
+graph.add_conditional_edges(
+    "agent",
+    route_after_agent,
+    {
+        "tools": "tools",
+        "end": END,
+    },
 )
 
-def load_node(state: AgentState) -> AgentState:
-    path = state.get("dataset_path") or "data/sample_transactions.csv"
-    df = load_csv(path)
-    state["_df"] = df
-    # log as ToolMessage
-    state["messages"].append(
-        ToolMessage(
-            content=f"Loaded dataset {path} with {len(df)} rows.",
-            tool_call_id=str(uuid.uuid4())
-        )
-    )
-    return state
+graph.add_conditional_edges(
+    "tools",
+    should_continue_after_tools,
+    {
+        "agent": "agent",
+    },
+)
 
-def advise_node(state: AgentState) -> AgentState:
-    df = state.get("_df")
-    advisor = Advisor()
-    metrics = advisor.analyze(df)
-    baseline_tips = advisor.advise(metrics)
-
-    # log baseline rule-based advice as ToolMessage
-    state["messages"].append(
-        ToolMessage(
-            content=f"Baseline advice: {baseline_tips}",
-            tool_call_id=str(uuid.uuid4())
-        )
-    )
-
-    system = "You are a concise financial coach. Use bullet points. Maximum 120 words."
-    user = (
-        "Based on the following metrics, provide 3-5 specific budgeting suggestions "
-        "(mention percentages or amounts if possible):\n"
-        f"{metrics}\n\n"
-        f"Rule-based baseline advice:\n{baseline_tips}"
-    )
-
-    text = llm.invoke([
-        {"role": "system", "content": system},
-        {"role": "user", "content": user}
-    ]).content
-
-    state["messages"].append(AIMessage(content=text))
-    state["last_response"] = text
-    return state
-
-def build_graph() -> StateGraph:
-    g = StateGraph(AgentState)
-    g.add_node("load", load_node)
-    g.add_node("advise", advise_node)
-    g.add_edge(START, "load")
-    g.add_edge("load", "advise")
-    g.add_edge("advise", END)
-    return g
+app = graph.compile()

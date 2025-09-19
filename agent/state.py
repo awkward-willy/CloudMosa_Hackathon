@@ -1,8 +1,6 @@
-from typing import TypedDict, List, Optional
+from typing import Annotated, Sequence, TypedDict
 from langchain_core.messages import BaseMessage
+from langgraph.graph.message import add_messages
 
-class AgentState(TypedDict, total=False):
-    messages: List[BaseMessage]
-    dataset_path: Optional[str]
-    last_response: Optional[str]
-    _df: object  # 內部用，放 pandas DataFrame
+class AgentState(TypedDict):
+    messages: Annotated[Sequence[BaseMessage], add_messages]
