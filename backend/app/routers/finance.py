@@ -14,10 +14,13 @@ router = APIRouter()
 
 
 @router.post("/tip")
-async def get_tip():
+async def get_tip(current_user: User = Depends(get_current_user)):
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.post(f"{settings.agent_base_url}/api/tip")
+            response = await client.post(
+                f"{settings.agent_base_url}/api/tip",
+                json={"user_uuid": str(current_user.id)},
+            )
             response.raise_for_status()
             tip_text = response.text
             return {"tip": tip_text if tip_text else "No tip available"}
