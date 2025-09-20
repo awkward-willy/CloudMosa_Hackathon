@@ -20,7 +20,6 @@ export async function updateTransaction(payload: TransactionPutPayload) {
     body: JSON.stringify({ description, amount, type, income }),
     cache: 'no-store',
   });
-  console.log('Update response:', res);
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`Update failed (${res.status}): ${text}`);
@@ -145,5 +144,39 @@ export async function loadMoreTransactions(skip: number, limit: number): Promise
   const pageSize = limit;
   const page = Math.floor(skip / pageSize) + 1; // assuming skip = (page-1)*pageSize
   return fetchTransactionsPage(page, pageSize);
+}
+
+// ---- Delete Transaction ----
+export interface DeleteActionState {
+  success?: boolean; // 是否刪除成功
+  error?: string; // 失敗訊息
+  id?: string; // 被刪除的 id
+}
+
+export async function deleteTransaction(id: string) {
+  if (!id) throw new Error('Missing id');
+  const res = await authFetch(`${process.env.BASE_URL}/api/transactions/${id}`, {
+    method: 'DELETE',
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Delete failed (${res.status}): ${text}`);
+  }
+  return { id }; // 回傳被刪除的 id 用於前端移除列表
+}
+
+export async function deleteTransactionAction(
+  _prev: DeleteActionState | undefined,
+  formData: FormData
+): Promise<DeleteActionState> {
+  const id = String(formData.get('id') || '');
+  if (!id) return { error: 'Missing ID' };
+  try {
+    await deleteTransaction(id);
+    return { success: true, id };
+  } catch (e: unknown) {
+    return { error: e instanceof Error ? e.message : 'Delete failed' };
+  }
 }
 

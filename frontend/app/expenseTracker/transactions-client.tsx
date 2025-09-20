@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, useRef, startTransition } from 'react';
 import { useActionState } from 'react';
-import { updateTransactionAction, fetchTransactionsPage, createTransactionAction } from './actions';
+import { updateTransactionAction, fetchTransactionsPage, createTransactionAction, deleteTransactionAction } from './actions';
 import { Drawer } from '@chakra-ui/react';
 
 interface Transaction {
@@ -46,6 +46,9 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
     const [loadErr, setLoadErr] = useState<string | null>(null);
     // Track already loaded pages to avoid duplicate fetches
     const loadedPagesRefRef = useRef<Set<number>>(new Set([initialMetadata.page]));
+    // Delete action state
+    interface DeleteState { success?: boolean; error?: string; id?: string }
+    const [deleteState, deleteAction, deletePending] = useActionState<DeleteState | undefined, FormData>(deleteTransactionAction, undefined);
 
     // Sync form with editing
     useEffect(() => {
@@ -66,6 +69,16 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
             setEditing(null); // 成功後自動關閉 Drawer
         }
     }, [state]);
+
+    useEffect(() => {
+        if (deleteState?.success && deleteState.id) {
+            setTransactions(prev => prev.filter(t => t.id !== deleteState.id));
+            if (editing && editing.id === deleteState.id) {
+                setEditing(null);
+            }
+            setSelectedIndex(0);
+        }
+    }, [deleteState, editing]);
 
     // Refs for drawer focusable elements
     const createFirstFieldRef = useRef<HTMLInputElement | null>(null);
@@ -229,7 +242,7 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
 
     const groupTransactionsByDate = (transactions: Transaction[]): TransactionGroup => {
         const groups: TransactionGroup = {};
-        
+
         transactions.forEach((tx, originalIndex) => {
             let raw = tx.time;
             if (!/[zZ]|[+-]\d{2}:?\d{2}$/.test(raw)) {
@@ -242,13 +255,13 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                 day: '2-digit',
                 timeZone: 'Asia/Taipei'
             }).replace(/\//g, '/');
-            
+
             if (!groups[dateKey]) {
                 groups[dateKey] = [];
             }
             groups[dateKey].push({ ...tx, originalIndex });
         });
-        
+
         return groups;
     };
 
@@ -278,7 +291,7 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                         <div className="bg-[#16a34a] text-sm font-medium text-white text-left" style={{ padding: '2px 10px' }}>
                             {date}
                         </div>
-                        
+
                         {dateTransactions.map((tx: GroupedTransaction) => {
                             const listIndex = tx.originalIndex + 1;
                             const active = listIndex === selectedIndex;
@@ -301,8 +314,8 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                                     <div className="text-sm font-semibold truncate flex-1 min-w-0">
                                         {tx.description}
                                     </div>
-                                    <div 
-                                        className="ml-3 flex-shrink-0 opacity-80" 
+                                    <div
+                                        className="ml-3 flex-shrink-0 opacity-80"
                                         style={{ fontWeight: tx.income ? 'bold' : 'normal' }}
                                     >
                                         {tx.income ? '+' : '-'}${Number(tx.amount).toFixed(2)}
@@ -388,7 +401,7 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                                             <label htmlFor="income" className="text-xs">Income?</label>
                                         </div>
                                         {state?.error && <p className="text-[11px] text-red-600">{state.error}</p>}
-                                        {state?.success && <p className="text-[11px] text-green-600">Saved</p>}
+                                        {deleteState?.error && <p className="text-[11px] text-red-600">{deleteState.error}</p>}
                                         <div className="flex gap-2 pt-2">
                                             <button
                                                 type="button"
@@ -400,12 +413,27 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                                             </button>
                                             <button
                                                 type="submit"
-                                                disabled={pending}
+                                                disabled={pending || deletePending}
                                                 className="flex-1 bg-blue-600 text-white rounded py-1 text-sm disabled:opacity-50"
                                                 data-focusable
                                             >
                                                 {pending ? 'Saving...' : 'Save'}
                                             </button>
+                                        </div>
+                                        <div className="pt-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    if (!editing) return;
+                                                    if (!confirm('Sure to delete this transaction? This action cannot be undone.')) return;
+                                                    const fd = new FormData();
+                                                    fd.set('id', editing.id);
+                                                    startTransition(() => deleteAction(fd));
+                                                }}
+                                                disabled={deletePending}
+                                                className="w-full bg-red-600 text-white rounded py-1 text-sm disabled:opacity-50 mt-2"
+                                                data-focusable
+                                            >{deletePending ? 'Deleting...' : 'Delete'}</button>
                                         </div>
                                     </form>
                                 </div>
