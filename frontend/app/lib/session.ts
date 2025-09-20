@@ -6,7 +6,7 @@ const ACCESS_COOKIE = 'access_token';
 
 export async function createSession(access_token: string, expiresInSeconds?: number) {
   const cookieStore = await cookies();
-  const maxAge = expiresInSeconds ?? 7 * 24 * 60 * 60; // default 7 days if backend not supplying
+  const maxAge = expiresInSeconds ?? 30 * 60; // default 30 min if backend not supplying
   const expires = new Date(Date.now() + maxAge * 1000);
 
   cookieStore.set(ACCESS_COOKIE, access_token, {
