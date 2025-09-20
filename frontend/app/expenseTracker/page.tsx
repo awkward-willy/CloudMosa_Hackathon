@@ -15,7 +15,7 @@ export default async function Page() {
   }
   const data: PaginatedResponse = await res.json();
   return (
-    <main className="flex flex-1 flex-col items-center justify-start w-65 space-y-6">
+    <main className="flex flex-1 flex-col items-center justify-start space-y-6 w-60" style={{padding: '40px 0px 0px 0px'}}>
       <TransactionsClient initialTransactions={data.items} initialMetadata={data.metadata} pageSize={pageSize} />
     </main>
   );

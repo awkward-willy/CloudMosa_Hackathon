@@ -1,5 +1,5 @@
 import { type ReactElement } from 'react';
-import { FaUtensils, FaTshirt, FaBus, FaGamepad, FaHeartbeat, FaBook, FaHome, FaBolt, FaBoxOpen } from 'react-icons/fa';
+import { FaUtensils, FaTshirt, FaBus, FaGamepad, FaHeartbeat, FaBook, FaHome, FaBolt, FaBriefcase, FaBoxOpen } from 'react-icons/fa';
 import { MdLocalDrink } from 'react-icons/md';
 
 export const CATEGORY_OPTIONS: string[] = [
@@ -12,6 +12,7 @@ export const CATEGORY_OPTIONS: string[] = [
     'Education',
     'Housing',
     'Utilities',
+    'Work',
     'Other',
 ];
 
@@ -24,6 +25,7 @@ export const CATEGORY_ICON_MAP = {
     Health: <FaHeartbeat />,
     Education: <FaBook />,
     Housing: <FaHome />,
+    Work: <FaBriefcase />,
     Utilities: <FaBolt />,
     Other: <FaBoxOpen />,
 } satisfies Record<string, ReactElement>;
