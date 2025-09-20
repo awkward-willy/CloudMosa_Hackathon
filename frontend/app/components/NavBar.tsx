@@ -66,11 +66,10 @@ export default function NavBar() {
               </Drawer.Positioner>
             </Portal>
           </Drawer.Root>
-
           <ChakraLink asChild>
             <NextLink href="/">
               <Text fontSize="16px" fontWeight="bold" color="white">
-                My Finance App
+                CoinMind
               </Text>
             </NextLink>
           </ChakraLink>
