@@ -33,7 +33,6 @@ export default async function Page() {
     );
   }
   const data: PaginatedResponse = await res.json();
-  console.log('Fetched transactions:', data);
   return (
     <main className="flex flex-1 flex-col items-center justify-start w-65 space-y-6">
       <TransactionsClient initialTransactions={data.items} initialMetadata={data.metadata} pageSize={pageSize} />
