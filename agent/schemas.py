@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Literal
 
 from pydantic import BaseModel, Field
 
@@ -30,4 +30,7 @@ class GetFinancialAdviceRequest(BaseModel):
     user_uuid: str = Field(..., description="Unique identifier for the user")
     transactions: List[Transaction] = Field(
         ..., description="List of user's transactions"
+    )
+    output_format: Literal["text", "audio"] = Field(
+        default="text", description="Output format: 'text' for plain text or 'audio' for voice"
     )

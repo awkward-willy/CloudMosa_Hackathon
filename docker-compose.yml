@@ -15,6 +15,7 @@ services:
 
   agent:
     build: ./agent
+    env_file: ./agent/.env
     ports:
       - "8001:8000"
 

@@ -1,4 +1,9 @@
+import os
+import requests
+from typing import Union
+
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import Response
 
 from models import AdviceModel, TransactionModel
 from schemas import GetFinancialAdviceRequest
@@ -6,8 +11,8 @@ from schemas import GetFinancialAdviceRequest
 router = APIRouter(prefix="/api", tags=["advice"])
 
 
-@router.post("/advice")
-async def get_financial_advice(request: GetFinancialAdviceRequest) -> str:
+@router.post("/advice", response_model=None)
+async def get_financial_advice(request: GetFinancialAdviceRequest):
     """
     Generate personalized financial advice based on user's transaction records.
 
@@ -15,10 +20,11 @@ async def get_financial_advice(request: GetFinancialAdviceRequest) -> str:
     to provide tailored recommendations for improving their financial health.
 
     Args:
-        request: Request containing user UUID and list of transactions
+        request: Request containing user UUID, list of transactions, and output format
 
     Returns:
-        str: Personalized financial advice as plain text
+        For text format: JSON string containing the advice text
+        For audio format: Response object with MP3 audio content
 
     Raises:
         HTTPException: If transaction validation fails or advice generation fails
@@ -42,7 +48,66 @@ async def get_financial_advice(request: GetFinancialAdviceRequest) -> str:
         if not advice:
             raise HTTPException(status_code=500, detail="Failed to generate advice")
 
-        return advice
+        # Return text format
+        if request.output_format == "text":
+            return advice
+
+        # Generate audio format using UnrealSpeech API
+        try:
+            api_key = os.getenv("TTS_API_KEY")
+            if not api_key:
+                raise HTTPException(
+                    status_code=500,
+                    detail="TTS_API_KEY not found in environment variables"
+                )
+
+            # Prepare the request to UnrealSpeech API
+            url = "https://api.v8.unrealspeech.com/speech"
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json"
+            }
+
+            payload = {
+                "Text": advice,
+                "VoiceId": "Sierra",
+                "Bitrate": "320k",
+                "AudioFormat": "mp3",
+                "OutputFormat": "uri",
+                "TimestampType": "sentence",
+                "sync": False,
+            }
+
+            # Make the API request
+            response = requests.post(url, json=payload, headers=headers, timeout=60)
+            response.raise_for_status()
+
+            # UnrealSpeech returns JSON with audio URL or direct audio content
+            response_data = response.json()
+
+            if "AudioContent" in response_data:
+                raise Exception("Unexpected response format from UnrealSpeech API")
+            audio_response = requests.get(response_data["OutputUri"], timeout=60)
+            audio_response.raise_for_status()
+            audio_content = audio_response.content
+
+            # Return the audio content as a response
+            return Response(
+                content=audio_content,
+                media_type="audio/mpeg",
+                headers={"Content-Disposition": f"attachment; filename=advice_{request.user_uuid}.mp3"}
+            )
+
+        except requests.exceptions.RequestException as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to call UnrealSpeech API: {str(e)}"
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to generate audio: {str(e)}"
+            )
 
     except HTTPException:
         raise

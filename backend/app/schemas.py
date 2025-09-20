@@ -67,3 +67,9 @@ class PaginationMetadata(BaseModel):
 class PaginatedTransactions(BaseModel):
     items: list[Transaction]
     metadata: PaginationMetadata
+
+
+# Financial advice schemas
+class GetFinancialAdviceRequest(BaseModel):
+    user_uuid: uuid.UUID
+    days: int
