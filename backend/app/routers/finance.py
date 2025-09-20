@@ -13,11 +13,11 @@ from app.schemas import FinancialAdviceResponse, GetFinancialAdviceRequest
 router = APIRouter()
 
 
-@router.get("/tip")
+@router.post("/tip")
 async def get_tip():
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.get(f"{settings.agent_base_url}/api/tip")
+            response = await client.post(f"{settings.agent_base_url}/api/tip")
             response.raise_for_status()
             tip_text = response.text
             return {"tip": tip_text if tip_text else "No tip available"}
