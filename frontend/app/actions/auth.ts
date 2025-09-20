@@ -33,8 +33,8 @@ export async function signup(state: FormState, formData: FormData) {
   });
 
   // 3. Insert the user into the database or call an Auth Library's API
-  // post to localhost:8000/api/users
-  const res = await fetch('https://hackathon-7auao7.puffin.app/api/users/', {
+  const baseURL = process.env.BASE_URL;
+  const res = await fetch(`${baseURL}/api/users/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -52,12 +52,6 @@ export async function signup(state: FormState, formData: FormData) {
       message: 'An error occurred while creating your account.',
     };
   }
-  // reponse should be{
-  //   "username": "string",
-  //   "email": "user@example.com",
-  //   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  //   "created_at": "2025-09-20T01:16:19.720Z"
-  // }
   const data = await res.json();
 
   const user = data;
@@ -80,7 +74,8 @@ export async function login(state: FormState, formData: FormData) {
     return { message: 'Invalid form submission.' };
   }
 
-  const res = await fetch(`https://hackathon-7auao7.puffin.app/api/auth/token`, {
+  const baseURL = process.env.BASE_URL;
+  const res = await fetch(`${baseURL}/api/auth/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
