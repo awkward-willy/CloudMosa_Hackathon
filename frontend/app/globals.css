@@ -27,15 +27,19 @@ body {
 
 /* Feature phone optimizations */
 @media (max-width: 320px) {
-  body {
+  /* body {
     font-size: 12px;
+  } */
+
+  main {
+    padding-top: 40px;
   }
 }
 
 @media (max-width: 240px) {
-  body {
+  /* body {
     font-size: 10px;
-  }
+  } */
 }
 
 /* QVGA (240x320) and QQVGA (160x120) support */
@@ -47,6 +51,6 @@ body {
 @media (max-width: 160px) {
   .feature-phone-container {
     max-width: 160px;
-    font-size: 8px;
+    /* font-size: 8px; */
   }
 }
