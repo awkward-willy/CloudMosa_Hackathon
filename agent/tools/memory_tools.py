@@ -1,8 +1,11 @@
-from langchain_core.tools import tool
 from typing import Optional
+
+from langchain_core.tools import tool
+
 from memory.memory_store import MemoryStore
 
 _store = MemoryStore()
+
 
 @tool
 def memory_get(key: str) -> str:
@@ -10,11 +13,13 @@ def memory_get(key: str) -> str:
     val = _store.get(key, "")
     return "" if val is None else str(val)
 
+
 @tool
 def memory_set(key: str, value: str) -> str:
     """Set a value into long-term memory by key (overwrites)."""
     _store.set(key, value)
     return f"OK: memory[{key}] set."
+
 
 @tool
 def memory_append(key: str, value: str) -> str:

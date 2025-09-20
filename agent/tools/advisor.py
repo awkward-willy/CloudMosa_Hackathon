@@ -1,5 +1,7 @@
 from __future__ import annotations
-from typing import List, Dict, Any
+
+from typing import Any, Dict, List
+
 from langchain_core.tools import tool
 
 # 直接沿用 tx_ingest.py 的 Transaction，確保 schema 一致
@@ -37,12 +39,17 @@ def _summarize(records: List[Transaction]) -> Dict[str, Any]:
     # 規則型建議
     advice: List[str] = []
     if savings_rate < 20:
-        advice.append("Your savings rate is below 20%. Automate transfers to savings (start with 10%).")
+        advice.append(
+            "Your savings rate is below 20%. Automate transfers to savings (start with 10%)."
+        )
     if expense_total > income_total:
         advice.append("Expenses exceed income. Cut non-essential categories by 20–30%.")
     if top_expense_types:
         top3 = list(top_expense_types.items())[:3]
-        advice.append("Focus on top expense types: " + ", ".join(f"{k} ({round(v,2)})" for k, v in top3))
+        advice.append(
+            "Focus on top expense types: "
+            + ", ".join(f"{k} ({round(v,2)})" for k, v in top3)
+        )
     if not advice:
         advice.append("Maintain current savings habit and review categories monthly.")
 

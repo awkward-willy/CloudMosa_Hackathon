@@ -4,8 +4,10 @@ from typing import Any, Dict, Optional
 
 DEFAULT_PATH = Path("data/memory.json")
 
+
 class MemoryStore:
     """Tiny JSON-backed memory store for long-term agent memory."""
+
     def __init__(self, path: Path = DEFAULT_PATH) -> None:
         self.path = path
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -46,6 +48,5 @@ class MemoryStore:
 
     def _flush(self) -> None:
         self.path.write_text(
-            json.dumps(self._cache, ensure_ascii=False, indent=2),
-            encoding="utf-8"
+            json.dumps(self._cache, ensure_ascii=False, indent=2), encoding="utf-8"
         )
