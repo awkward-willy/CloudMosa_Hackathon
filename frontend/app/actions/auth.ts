@@ -1,10 +1,9 @@
 'use server';
 
 import { AuthTokenResponse, FormState, SignupFormSchema } from '@/app/lib/definitions';
+import { createSession, deleteSession } from '@/app/lib/session';
 
 import { redirect } from 'next/navigation';
-
-import { createSession, deleteSession } from '../lib/session';
 
 export async function signup(state: FormState, formData: FormData) {
   // Validate form fields
