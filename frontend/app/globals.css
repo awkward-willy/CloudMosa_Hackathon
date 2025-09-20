@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+* {
+  font-weight: revert !important;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -27,15 +31,19 @@ body {
 
 /* Feature phone optimizations */
 @media (max-width: 320px) {
-  body {
+  /* body {
     font-size: 12px;
+  } */
+
+  main {
+    padding-top: 40px;
   }
 }
 
 @media (max-width: 240px) {
-  body {
+  /* body {
     font-size: 10px;
-  }
+  } */
 }
 
 /* QVGA (240x320) and QQVGA (160x120) support */
@@ -47,6 +55,23 @@ body {
 @media (max-width: 160px) {
   .feature-phone-container {
     max-width: 160px;
-    font-size: 8px;
+    /* font-size: 8px; */
   }
+}
+
+li, p, h1, h2, h3, h4, h5, h6 {
+  margin: 0.5rem;
+  padding: revert;
+  font-size: revert;
+  font-weight: revert;
+  line-height: revert;
+  font-family: revert;
+}
+
+hr {
+  margin: revert;
+  padding: revert;
+  border: revert;
+  height: revert;
+  background-color: revert;
 }
