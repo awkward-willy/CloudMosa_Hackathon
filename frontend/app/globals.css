@@ -80,3 +80,15 @@ input, select, button{
   margin: revert;
   padding: revert;
 }
+
+input {
+  margin: 0.5rem 0;
+  padding: 0.2rem;
+  border-width: revert;
+  border-color: revert;
+}
+
+button {
+  color: white;
+  background-color: var(--color-green-600);
+}
