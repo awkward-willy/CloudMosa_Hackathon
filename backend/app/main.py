@@ -4,7 +4,7 @@ from fastapi import FastAPI
 
 from app.config import settings
 from app.database import create_tables
-from app.routers import auth, health, tips, transactions, users
+from app.routers import auth, finance, health, transactions, users
 
 
 @asynccontextmanager
@@ -28,7 +28,7 @@ app.include_router(health.router, prefix="/api")
 app.include_router(auth.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
 app.include_router(transactions.router, prefix="/api")
-app.include_router(tips.router, prefix="/api")
+app.include_router(finance.router, prefix="/api")
 
 
 @app.get("/api")
