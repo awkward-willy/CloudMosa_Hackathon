@@ -49,7 +49,7 @@ export default function NavBar() {
                   <Drawer.Body p={0}>
                     <Box>
                       {menuItems.map((item, idx) => (
-                        <Box key={item.label} mb={3}>
+                        <Box key={item.label} mb={1}>
                           <Button w="100%" borderRadius="0" color="white" bg={idx === selectedIndex ? 'green.700' : 'none'} _focus={{ boxShadow: 'none', outline: 'none' }}>
                             <ChakraLink asChild fontSize="lg">
                               <NextLink href={item.url}>{item.label}</NextLink>
