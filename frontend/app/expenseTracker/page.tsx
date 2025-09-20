@@ -1,26 +1,7 @@
 import { authFetch } from '@/app/lib/auth-fetch';
 import TransactionsClient from '@/app/expenseTracker/transactions-client';
+import { PaginatedResponse } from '@/app/types/ExpenseTracker/PaginatedResult';
 
-interface Transaction {
-  id: string;
-  income: boolean;
-  description: string;
-  amount: number;
-  type: string;
-  time: string;
-}
-
-interface PaginatedResponse {
-  items: Transaction[];
-  metadata: {
-    page: number;
-    page_size: number;
-    total_items: number;
-    total_pages: number;
-    has_next: boolean;
-    has_previous: boolean;
-  };
-}
 
 export default async function Page() {
   const pageSize = 20;

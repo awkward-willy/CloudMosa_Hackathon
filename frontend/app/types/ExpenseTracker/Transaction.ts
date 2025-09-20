@@ -1,3 +1,12 @@
+export interface Transaction {
+  id: string;
+  income: boolean;
+  description: string;
+  amount: number;
+  type: string;
+  time: string;
+}
+
 export interface TransactionShape {
   id: string;
   income: boolean;
@@ -31,3 +40,4 @@ export interface DeleteActionState {
   error?: string;
   id?: string;
 }
+
