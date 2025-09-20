@@ -2,7 +2,11 @@
 
 import { useCallback, useEffect, useState, useRef, startTransition } from 'react';
 import { useActionState } from 'react';
-import { updateTransactionAction, fetchTransactionsPage, createTransactionAction } from './actions';
+import { createTransactionAction } from '@/app/actions/expenseTracker/createTransaction';
+import { updateTransactionAction } from '@/app/actions/expenseTracker/updateTransaction';
+import { deleteTransactionAction } from '@/app/actions/expenseTracker/deleteTransaction';
+import { fetchTransactionsPage } from '@/app/actions/expenseTracker/fetchTransaction';
+import { CATEGORY_OPTIONS, getCategoryIcon } from '@/app/expenseTracker/constants/categories';
 import { Drawer } from '@chakra-ui/react';
 
 interface Transaction {
@@ -46,6 +50,9 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
     const [loadErr, setLoadErr] = useState<string | null>(null);
     // Track already loaded pages to avoid duplicate fetches
     const loadedPagesRefRef = useRef<Set<number>>(new Set([initialMetadata.page]));
+    // Delete action state
+    interface DeleteState { success?: boolean; error?: string; id?: string }
+    const [deleteState, deleteAction, deletePending] = useActionState<DeleteState | undefined, FormData>(deleteTransactionAction, undefined);
 
     // Sync form with editing
     useEffect(() => {
@@ -66,6 +73,16 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
             setEditing(null); // 成功後自動關閉 Drawer
         }
     }, [state]);
+
+    useEffect(() => {
+        if (deleteState?.success && deleteState.id) {
+            setTransactions(prev => prev.filter(t => t.id !== deleteState.id));
+            if (editing && editing.id === deleteState.id) {
+                setEditing(null);
+            }
+            setSelectedIndex(0);
+        }
+    }, [deleteState, editing]);
 
     // Refs for drawer focusable elements
     const createFirstFieldRef = useRef<HTMLInputElement | null>(null);
@@ -229,7 +246,7 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
 
     const groupTransactionsByDate = (transactions: Transaction[]): TransactionGroup => {
         const groups: TransactionGroup = {};
-        
+
         transactions.forEach((tx, originalIndex) => {
             let raw = tx.time;
             if (!/[zZ]|[+-]\d{2}:?\d{2}$/.test(raw)) {
@@ -242,13 +259,13 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                 day: '2-digit',
                 timeZone: 'Asia/Taipei'
             }).replace(/\//g, '/');
-            
+
             if (!groups[dateKey]) {
                 groups[dateKey] = [];
             }
             groups[dateKey].push({ ...tx, originalIndex });
         });
-        
+
         return groups;
     };
 
@@ -278,7 +295,7 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                         <div className="bg-[#16a34a] text-sm font-medium text-white text-left" style={{ padding: '2px 10px' }}>
                             {date}
                         </div>
-                        
+
                         {dateTransactions.map((tx: GroupedTransaction) => {
                             const listIndex = tx.originalIndex + 1;
                             const active = listIndex === selectedIndex;
@@ -296,13 +313,13 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                                     }}
                                 >
                                     <div className={`w-8 h-8 rounded-full flex items-center justify-center ${active ? 'bg-gray-400' : 'bg-gray-300'} mr-3`}>
-                                        {/* icon base on {tx.type}*/}
+                                        <span className="text-lg" aria-label={tx.type}>{getCategoryIcon(tx.type)}</span>
                                     </div>
                                     <div className="text-sm font-semibold truncate flex-1 min-w-0">
                                         {tx.description}
                                     </div>
-                                    <div 
-                                        className="ml-3 flex-shrink-0 opacity-80" 
+                                    <div
+                                        className="ml-3 flex-shrink-0 opacity-80"
                                         style={{ fontWeight: tx.income ? 'bold' : 'normal' }}
                                     >
                                         {tx.income ? '+' : '-'}${Number(tx.amount).toFixed(2)}
@@ -324,13 +341,13 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
             <Drawer.Root open={!!editing} onOpenChange={(v) => { if (!v.open) setEditing(null); }} placement="end">
                 <Drawer.Backdrop />
                 <Drawer.Positioner>
-                    <Drawer.Content className="w-80 max-w-[90vw]" id="edit-drawer-content" bg={"white"}>
+                    <Drawer.Content className="w-80 max-w-[90vw] flex flex-col max-h-screen" id="edit-drawer-content" bg={"white"}>
                         {editing && (
-                            <div className="flex flex-col h-full">
+                            <div className="flex flex-col h-full flex-1 min-h-0">{/* min-h-0 確保子元素 overflow 正常 */}
                                 <div className="px-4 py-3 border-b flex items-center justify-between">
                                     <h2 className="font-bold text-sm">Edit Transaction</h2>
                                 </div>
-                                <div className="p-4 overflow-y-auto flex-1">
+                                <div className="p-4 overflow-y-auto flex-1" style={{ WebkitOverflowScrolling: 'touch' }}>
                                     <form action={formAction} className="space-y-3" onSubmit={() => { /* no-op */ }}>
                                         <input type="hidden" name="id" value={editing.id} />
                                         <div className="flex flex-col text-left gap-1">
@@ -368,6 +385,30 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                                                 required
                                                 data-focusable
                                             />
+                                            {/* 類別快速選擇 */}
+                                            <div className="flex flex-wrap gap-1 pt-1">
+                                                {CATEGORY_OPTIONS.map(cat => {
+                                                    const active = localForm.type === cat;
+                                                    return (
+                                                        <button
+                                                            type="button"
+                                                            key={cat}
+                                                            className={`px-2 py-0.5 rounded border flex items-center gap-1 text-[10px] focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors ${active ? 'bg-blue-600 text-white border-blue-600' : 'bg-white hover:bg-gray-100'}`}
+                                                            onClick={() => setLocalForm(p => ({ ...p, type: cat }))}
+                                                            data-focusable
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    e.preventDefault();
+                                                                    setLocalForm(p => ({ ...p, type: cat }));
+                                                                }
+                                                            }}
+                                                        >
+                                                            <span>{getCategoryIcon(cat)}</span>
+                                                            <span>{cat}</span>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <input
@@ -388,7 +429,7 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                                             <label htmlFor="income" className="text-xs">Income?</label>
                                         </div>
                                         {state?.error && <p className="text-[11px] text-red-600">{state.error}</p>}
-                                        {state?.success && <p className="text-[11px] text-green-600">Saved</p>}
+                                        {deleteState?.error && <p className="text-[11px] text-red-600">{deleteState.error}</p>}
                                         <div className="flex gap-2 pt-2">
                                             <button
                                                 type="button"
@@ -400,12 +441,27 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                                             </button>
                                             <button
                                                 type="submit"
-                                                disabled={pending}
+                                                disabled={pending || deletePending}
                                                 className="flex-1 bg-blue-600 text-white rounded py-1 text-sm disabled:opacity-50"
                                                 data-focusable
                                             >
                                                 {pending ? 'Saving...' : 'Save'}
                                             </button>
+                                        </div>
+                                        <div className="pt-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    if (!editing) return;
+                                                    if (!confirm('Sure to delete this transaction? This action cannot be undone.')) return;
+                                                    const fd = new FormData();
+                                                    fd.set('id', editing.id);
+                                                    startTransition(() => deleteAction(fd));
+                                                }}
+                                                disabled={deletePending}
+                                                className="w-full bg-red-600 text-white rounded py-1 text-sm disabled:opacity-50 mt-2"
+                                                data-focusable
+                                            >{deletePending ? 'Deleting...' : 'Delete'}</button>
                                         </div>
                                     </form>
                                 </div>
@@ -419,11 +475,11 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
             <Drawer.Root open={creating} onOpenChange={(v) => { if (!v.open) closeCreateDrawer(); }} placement="end">
                 <Drawer.Backdrop />
                 <Drawer.Positioner>
-                    <Drawer.Content className="w-80 max-w-[90vw]" id="create-drawer-content" bg="white">
-                        <div className="flex items-center justify-between px-4 py-3 border-b">
+                    <Drawer.Content className="w-80 max-w-[90vw] flex flex-col max-h-screen" id="create-drawer-content" bg="white">
+                        <div className="flex items-center justify-between px-4 py-3 border-b flex-shrink-0">
                             <h2 className="font-bold text-sm">New Transaction</h2>
                         </div>
-                        <div className="p-4 space-y-3 text-left">
+                        <div className="p-4 space-y-3 text-left overflow-y-auto flex-1 min-h-0" style={{ WebkitOverflowScrolling: 'touch' }}>
                             <div className="flex flex-col text-left gap-1">
                                 <label className="text-xs font-medium">Description</label>
                                 <input
@@ -456,6 +512,29 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                                     placeholder="Type"
                                     data-focusable
                                 />
+                                <div className="flex flex-wrap gap-1 pt-1">
+                                    {CATEGORY_OPTIONS.map(cat => {
+                                        const active = createForm.type === cat;
+                                        return (
+                                            <button
+                                                type="button"
+                                                key={cat}
+                                                className={`px-2 py-0.5 rounded border flex items-center gap-1 text-[10px] focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors ${active ? 'bg-blue-600 text-white border-blue-600' : 'bg-white hover:bg-gray-100'}`}
+                                                onClick={() => setCreateForm(p => ({ ...p, type: cat }))}
+                                                data-focusable
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        e.preventDefault();
+                                                        setCreateForm(p => ({ ...p, type: cat }));
+                                                    }
+                                                }}
+                                            >
+                                                <span>{getCategoryIcon(cat)}</span>
+                                                <span>{cat}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
                             </div>
                             <div className="flex items-center gap-2">
                                 <input
@@ -476,7 +555,10 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                             </div>
                             {createState?.error && <p className="text-[11px] text-red-600">{createState.error}</p>}
                             {createState?.success && <p className="text-[11px] text-green-600">Create successful</p>}
+                        </div>
+                        <div className="px-4 pt-2 pb-4 border-t flex-shrink-0">
                             <form
+                                className="w-full"
                                 action={createAction}
                                 onSubmit={(e) => {
                                     const fd = new FormData();
@@ -490,7 +572,7 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                                     e.preventDefault();
                                 }}
                             >
-                                <div className="flex gap-2 pt-2">
+                                <div className="flex gap-2">
                                     <button
                                         type="button"
                                         onClick={closeCreateDrawer}

@@ -1,10 +1,9 @@
 'use server';
 
 import { AuthTokenResponse, FormState, SignupFormSchema } from '@/app/lib/definitions';
+import { createSession, deleteSession } from '@/app/lib/session';
 
 import { redirect } from 'next/navigation';
-
-import { createSession, deleteSession } from '../lib/session';
 
 export async function signup(state: FormState, formData: FormData) {
   // Validate form fields
@@ -23,14 +22,6 @@ export async function signup(state: FormState, formData: FormData) {
 
   // Call the provider or db to create a user...
   const { name, email, password } = validatedFields.data;
-  // e.g. Hash the user's password before storing it
-  // const hashedPassword = await bcrypt.hash(password, 10);
-
-  console.log('Creating user with:', {
-    username: name,
-    email: email,
-    password: password,
-  });
 
   // 3. Insert the user into the database or call an Auth Library's API
   const baseURL = process.env.BASE_URL;

@@ -1,5 +1,5 @@
 'use server';
-import LogoutConfirmButton from '../components/LogoutConfirmButton';
+import LogoutConfirmButton from '@/app/components/LogoutConfirmButton';
 
 export default async function LogoutPage() {
     // Are you sure you want to logout?

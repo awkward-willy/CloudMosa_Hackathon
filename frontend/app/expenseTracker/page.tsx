@@ -1,26 +1,7 @@
 import { authFetch } from '@/app/lib/auth-fetch';
 import TransactionsClient from '@/app/expenseTracker/transactions-client';
+import { PaginatedResponse } from '@/app/types/ExpenseTracker/PaginatedResult';
 
-interface Transaction {
-  id: string;
-  income: boolean;
-  description: string;
-  amount: number;
-  type: string;
-  time: string;
-}
-
-interface PaginatedResponse {
-  items: Transaction[];
-  metadata: {
-    page: number;
-    page_size: number;
-    total_items: number;
-    total_pages: number;
-    has_next: boolean;
-    has_previous: boolean;
-  };
-}
 
 export default async function Page() {
   const pageSize = 20;
@@ -33,7 +14,6 @@ export default async function Page() {
     );
   }
   const data: PaginatedResponse = await res.json();
-  console.log('Fetched transactions:', data);
   return (
     <main className="flex flex-1 flex-col items-center justify-start w-65 space-y-6">
       <TransactionsClient initialTransactions={data.items} initialMetadata={data.metadata} pageSize={pageSize} />

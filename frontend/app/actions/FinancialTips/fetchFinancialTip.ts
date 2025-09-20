@@ -1,7 +1,7 @@
 'use server';
 
-import { authFetch } from '../../lib/auth-fetch';
-import { FinancialTipResult } from '../../types/FinancialTips/FinancialTipResult';
+import { authFetch } from '@/app/lib/auth-fetch';
+import { FinancialTipResult } from '@/app/types/FinancialTips/FinancialTipResult';
 
 export async function fetchFinancialTip(): Promise<FinancialTipResult> {
   try {
