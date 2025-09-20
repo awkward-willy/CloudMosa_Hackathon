@@ -50,7 +50,18 @@ export default function NavBar() {
                     <Box>
                       {menuItems.map((item, idx) => (
                         <Box key={item.label} mb={1}>
-                          <Button w="100%" borderRadius="0" color="white" bg={idx === selectedIndex ? 'green.700' : 'none'} _focus={{ boxShadow: 'none', outline: 'none' }}>
+                          <Button
+                            w="100%"
+                            borderRadius="0"
+                            color="white"
+                            bg={idx === selectedIndex ? 'green.700' : 'none'}
+                            _focus={{ boxShadow: 'none', outline: 'none' }}
+                            ref={el => {
+                              if (idx === selectedIndex && el) {
+                                el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                              }
+                            }}
+                          >
                             <ChakraLink asChild fontSize="lg">
                               <NextLink href={item.url}>{item.label}</NextLink>
                             </ChakraLink>
