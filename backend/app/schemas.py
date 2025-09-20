@@ -52,3 +52,18 @@ class Transaction(TransactionBase):
     time: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# Pagination schemas
+class PaginationMetadata(BaseModel):
+    page: int
+    page_size: int
+    total_items: int
+    total_pages: int
+    has_next: bool
+    has_previous: bool
+
+
+class PaginatedTransactions(BaseModel):
+    items: list[Transaction]
+    metadata: PaginationMetadata

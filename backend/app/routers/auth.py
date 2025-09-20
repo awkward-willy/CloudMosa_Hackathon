@@ -12,7 +12,7 @@ from app.database import get_db
 from app.models import User
 from app.schemas import User as UserSchema
 from app.schemas import UserLogin
-from app.security import create_access_token, verify_password, decode_access_token
+from app.security import create_access_token, decode_access_token, verify_password
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
