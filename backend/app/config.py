@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
 
+    # Password hashing salt
+    salt: str = "default-salt-change-in-env"
+
     model_config = {"extra": "ignore"}
 
     def __init__(self, **data):

@@ -10,4 +10,6 @@ export const menuItems: MenuItem[] = [
   { label: 'Investment Calculator', url: '/investmentCalculator' },
   { label: 'Financial Tips', url: '/financialTips' },
   { label: 'About', url: '/about' },
+  { label: 'Logout', url: '/logout' },
 ];
+
