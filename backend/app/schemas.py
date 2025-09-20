@@ -72,4 +72,4 @@ class PaginatedTransactions(BaseModel):
 # Financial advice schemas
 class GetFinancialAdviceRequest(BaseModel):
     user_uuid: uuid.UUID
-    transactions: list[Transaction]
+    days: int

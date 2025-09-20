@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timedelta
 from typing import Optional
 
 from sqlalchemy import func
@@ -68,12 +69,16 @@ class TransactionRepository:
         limit: int = 100,
         income: Optional[bool] = None,
         type: Optional[str] = None,
+        days: Optional[int] = None,
     ) -> list[Transaction]:
         query = select(Transaction).filter(Transaction.user_id == user_id)
         if income is not None:
             query = query.filter(Transaction.income == income)
         if type is not None:
             query = query.filter(Transaction.type == type)
+        if days is not None:
+            cutoff_date = datetime.utcnow() - timedelta(days=days)
+            query = query.filter(Transaction.time >= cutoff_date)
         result = await self.db.execute(
             query.offset(skip)
             .limit(limit)
@@ -86,6 +91,7 @@ class TransactionRepository:
         user_id: uuid.UUID,
         income: Optional[bool] = None,
         type: Optional[str] = None,
+        days: Optional[int] = None,
     ) -> int:
         query = select(func.count(Transaction.id)).filter(
             Transaction.user_id == user_id
@@ -94,6 +100,9 @@ class TransactionRepository:
             query = query.filter(Transaction.income == income)
         if type is not None:
             query = query.filter(Transaction.type == type)
+        if days is not None:
+            cutoff_date = datetime.utcnow() - timedelta(days=days)
+            query = query.filter(Transaction.time >= cutoff_date)
         result = await self.db.execute(query)
         return result.scalar() or 0
 
@@ -111,6 +120,22 @@ class TransactionRepository:
             await self.db.commit()
             await self.db.refresh(db_transaction)
         return db_transaction
+
+    async def get_recent_transactions_by_user(
+        self,
+        user_id: uuid.UUID,
+        days: int,
+    ) -> list[Transaction]:
+        """Get all transactions for a user within the last X days."""
+        cutoff_date = datetime.utcnow() - timedelta(days=days)
+        query = (
+            select(Transaction)
+            .filter(Transaction.user_id == user_id, Transaction.time >= cutoff_date)
+            .order_by(Transaction.time.desc())
+        )
+
+        result = await self.db.execute(query)
+        return list(result.scalars().all())
 
     async def delete_transaction(
         self, transaction_id: uuid.UUID, user_id: uuid.UUID

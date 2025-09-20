@@ -1,6 +1,11 @@
 import httpx
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.crud import TransactionRepository
+from app.database import get_db
+from app.models import User
+from app.routers.auth import get_current_user
 from app.schemas import GetFinancialAdviceRequest
 
 router = APIRouter()
@@ -21,34 +26,59 @@ async def get_tip():
 
 
 @router.post("/advice")
-async def get_financial_advice(request: GetFinancialAdviceRequest) -> str:
+async def get_financial_advice(
+    request: GetFinancialAdviceRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> str:
     """
-    Generate personalized financial advice based on user's transaction records.
+    Generate personalized financial advice based on user's recent transaction records.
 
-    This endpoint forwards the request to the agent service to get financial advice.
+    This endpoint queries the database for recent transactions and forwards them
+    to the agent service to get financial advice.
 
     Args:
-        request: Request containing user UUID and list of transactions
+        request: Request containing the number of recent days to analyze
 
     Returns:
         str: Personalized financial advice as plain text
 
     Raises:
-        HTTPException: If the agent service call fails
+        HTTPException: If the agent service call fails or database query fails
     """
-    async with httpx.AsyncClient() as client:
-        try:
-            # Convert request to JSON for the POST call
-            request_data = request.model_dump()
+    try:
+        # Get recent transactions from database
+        transaction_repo = TransactionRepository(db)
+        recent_transactions = await transaction_repo.get_recent_transactions_by_user(
+            user_id=current_user.id, days=request.days
+        )
 
-            response = await client.post("http://agent/api/advice", json=request_data)
+        # Convert transactions to the format expected by the agent
+        transaction_data = [
+            {
+                "income": transaction.income,
+                "description": transaction.description,
+                "amount": float(transaction.amount),
+                "type": transaction.type,
+            }
+            for transaction in recent_transactions
+        ]
+
+        # Prepare request data for agent service
+        agent_request_data = {
+            "user_uuid": str(current_user.id),
+            "transactions": transaction_data,
+        }
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "http://agent/api/advice", json=agent_request_data
+            )
             response.raise_for_status()
             advice_text = response.text
             return advice_text if advice_text else "No advice available"
 
-        except httpx.RequestError as e:
-            raise HTTPException(
-                status_code=500, detail=f"Error fetching advice: {str(e)}"
-            )
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+    except httpx.RequestError as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching advice: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")

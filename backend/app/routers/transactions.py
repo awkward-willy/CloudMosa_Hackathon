@@ -42,6 +42,9 @@ async def read_transactions(
         None, description="Filter by income (true) or expense (false)"
     ),
     type: Optional[str] = Query(None, description="Filter by transaction type"),
+    days: Optional[int] = Query(
+        None, ge=1, description="Filter transactions from the last X days"
+    ),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -52,10 +55,15 @@ async def read_transactions(
 
     # Get transactions and total count
     transactions = await transaction_repo.get_transactions_by_user(
-        user_id=current_user.id, skip=skip, limit=page_size, income=income, type=type
+        user_id=current_user.id,
+        skip=skip,
+        limit=page_size,
+        income=income,
+        type=type,
+        days=days,
     )
     total_count = await transaction_repo.get_transactions_count_by_user(
-        user_id=current_user.id, income=income, type=type
+        user_id=current_user.id, income=income, type=type, days=days
     )
 
     # Calculate pagination metadata
