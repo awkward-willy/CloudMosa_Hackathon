@@ -3,13 +3,11 @@ services:
     image: postgres:15
     env_file: ./backend/.env
     volumes:
-      - ./data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
 
   backend:
     build: ./backend
     env_file: ./backend/.env
-    volumes:
-      - ./backend:/app
     depends_on:
       - db
     ports:
@@ -17,28 +15,21 @@ services:
 
   frontend:
     build: ./frontend
-    volumes:
-      - ./frontend:/app
     ports:
       - "3000:3000"
 
   caddy:
     image: caddy:2
     command: |
-      caddy run --config - << 'EOF'
-      localhost {
-          # Frontend
-          handle / {
-              reverse_proxy frontend:3000
-          }
-          # Backend API
-          handle /api/* {
-              reverse_proxy backend:8000
-          }
-      }
-      EOF
+      caddy run --config /etc/Caddyfile
+    volumes:
+      - ./Caddyfile:/etc/Caddyfile
     ports:
       - "80:80"
+      - "443:443"
     depends_on:
       - frontend
       - backend
+
+volumes:
+  db_data:

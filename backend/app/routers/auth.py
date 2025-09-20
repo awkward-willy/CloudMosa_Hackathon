@@ -1,8 +1,8 @@
 import uuid
 from datetime import timedelta
+from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import APIRouter, Depends, Header, HTTPException, status
 from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,16 +11,15 @@ from app.crud import UserRepository
 from app.database import get_db
 from app.models import User
 from app.schemas import User as UserSchema
-from app.security import create_access_token, verify_password
+from app.schemas import UserLogin
+from app.security import create_access_token, verify_password, decode_access_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
 
 
 @router.post("/token")
 async def login_for_access_token(
-    form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)
+    form_data: UserLogin, db: AsyncSession = Depends(get_db)
 ):
     user_repo = UserRepository(db)
     user = await user_repo.get_user_by_username(username=form_data.username)
@@ -38,17 +37,22 @@ async def login_for_access_token(
 
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
+    authorization: Optional[str] = Header(None), db: AsyncSession = Depends(get_db)
 ) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    if authorization is None:
+        raise credentials_exception
     try:
-        payload = jwt.decode(
-            token, settings.secret_key, algorithms=[settings.algorithm]
-        )
+        scheme, token = authorization.split()
+        if scheme.lower() != "bearer":
+            raise credentials_exception
+        payload = decode_access_token(token)
+        if payload is None:
+            raise credentials_exception
         user_id_str = payload.get("sub")
         if user_id_str is None:
             raise credentials_exception
