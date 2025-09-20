@@ -1,17 +1,18 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const isProd = process.env.NODE_ENV === 'production';
 
 const nextConfig: NextConfig = {
   trailingSlash: true,
-  assetPrefix: isProd ? '/CloudMosa_Hackathon/' : '',
-  basePath: isProd ? '/CloudMosa_Hackathon' : '',
+  assetPrefix: isProd ? process.env.BASE_URL : '',
+  basePath: isProd ? process.env.BASE_URL : '',
   images: {
     unoptimized: true,
   },
   experimental: {
-    optimizePackageImports: ["@chakra-ui/react"],
+    optimizePackageImports: ['@chakra-ui/react'],
   },
 };
 
 export default nextConfig;
+
