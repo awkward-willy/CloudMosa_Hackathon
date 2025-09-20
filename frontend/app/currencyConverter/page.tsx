@@ -46,8 +46,8 @@ export default function Page() {
           const idx = opts.indexOf(currentValue);
           if (idx !== -1) {
             let nextIdx = key === "ArrowUp" ? idx - 1 : idx + 1;
-            if (nextIdx < 0) nextIdx = opts.length - 1;
-            if (nextIdx >= opts.length) nextIdx = 0;
+            if (nextIdx < 0) nextIdx = opts.length - 1; // wrap
+            if (nextIdx >= opts.length) nextIdx = 0; // wrap
             const nextValue = opts[nextIdx];
             if (focusIndex === 1) {
               setFromCurrency(nextValue);
