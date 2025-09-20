@@ -1,6 +1,6 @@
 import ReactMarkdown from "react-markdown";
 
-export const financialTipMD = `
+const financialTipMD = `
 **Simple Budgeting for Better Money Management**
 
 Managing your money can feel hard, but a simple budget helps you understand where your money goes. A budget is like a plan for your money, so you can make sure you have enough for what's important.
