@@ -341,7 +341,7 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
             <Drawer.Root open={!!editing} onOpenChange={(v) => { if (!v.open) setEditing(null); }} placement="end">
                 <Drawer.Backdrop />
                 <Drawer.Positioner>
-                    <Drawer.Content className="w-80 max-w-[90vw] flex flex-col max-h-screen" id="edit-drawer-content" bg={"white"}>
+                    <Drawer.Content className="w-80 max-w-[90vw] flex flex-col max-h-screen" id="edit-drawer-content" bg="white" p="5">
                         {editing && (
                             <div className="flex flex-col h-full flex-1 min-h-0">{/* min-h-0 確保子元素 overflow 正常 */}
                                 <div className="px-4 py-3 border-b flex items-center justify-between">
@@ -357,7 +357,7 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                                                 name="description"
                                                 value={localForm.description}
                                                 onChange={(e) => setLocalForm((p) => ({ ...p, description: e.target.value }))}
-                                                className="border rounded px-2 py-1 text-sm"
+                                                className="border rounded-lg px-2 py-1 text-sm"
                                                 required
                                                 data-focusable
                                             />
@@ -370,7 +370,7 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                                                 step="0.01"
                                                 value={localForm.amount}
                                                 onChange={(e) => setLocalForm((p) => ({ ...p, amount: e.target.value }))}
-                                                className="border rounded px-2 py-1 text-sm"
+                                                className="border rounded-lg px-2 py-1 text-sm"
                                                 required
                                                 data-focusable
                                             />
@@ -381,7 +381,7 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                                                 name="type"
                                                 value={localForm.type}
                                                 onChange={(e) => setLocalForm((p) => ({ ...p, type: e.target.value }))}
-                                                className="border rounded px-2 py-1 text-sm"
+                                                className="border rounded-lg px-2 py-1 text-sm"
                                                 required
                                                 data-focusable
                                             />
@@ -475,7 +475,7 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
             <Drawer.Root open={creating} onOpenChange={(v) => { if (!v.open) closeCreateDrawer(); }} placement="end">
                 <Drawer.Backdrop />
                 <Drawer.Positioner>
-                    <Drawer.Content className="w-80 max-w-[90vw] flex flex-col max-h-screen" id="create-drawer-content" bg="white">
+                    <Drawer.Content className="w-80 max-w-[90vw] flex flex-col max-h-screen" id="create-drawer-content" bg="white" p="5">
                         <div className="flex items-center justify-between px-4 py-3 border-b flex-shrink-0">
                             <h2 className="font-bold text-sm">New Transaction</h2>
                         </div>
@@ -485,7 +485,7 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                                 <input
                                     value={createForm.description}
                                     onChange={(e) => setCreateForm(p => ({ ...p, description: e.target.value }))}
-                                    className="border rounded px-2 py-1 text-sm"
+                                    className="border rounded-lg px-2 py-1 text-sm"
                                     placeholder="Description"
                                     ref={createFirstFieldRef}
                                     data-focusable
@@ -498,7 +498,7 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                                     step="0.01"
                                     value={createForm.amount}
                                     onChange={(e) => setCreateForm(p => ({ ...p, amount: e.target.value }))}
-                                    className="border rounded px-2 py-1 text-sm"
+                                    className="border rounded-lg px-2 py-1 text-sm"
                                     placeholder="Amount"
                                     data-focusable
                                 />
@@ -508,7 +508,7 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                                 <input
                                     value={createForm.type}
                                     onChange={(e) => setCreateForm(p => ({ ...p, type: e.target.value }))}
-                                    className="border rounded px-2 py-1 text-sm"
+                                    className="border rounded-lg px-2 py-1 text-sm"
                                     placeholder="Type"
                                     data-focusable
                                 />
