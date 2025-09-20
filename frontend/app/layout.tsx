@@ -35,6 +35,7 @@ export default function RootLayout({
             <div className="mx-auto flex min-h-screen flex-col items-center justify-center p-2 text-center">
               <NavBar />
               {children}
+              <div className="h-8 w-full" />
             </div>
           </ClientLayout>
         </Provider>
