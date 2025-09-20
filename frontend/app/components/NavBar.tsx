@@ -46,13 +46,12 @@ export default function NavBar() {
               <Drawer.Backdrop />
               <Drawer.Positioner>
                 <Drawer.Content bg="green.600">
-                  <Drawer.Header />
-                  <Drawer.Body>
+                  <Drawer.Body p={0}>
                     <Box>
                       {menuItems.map((item, idx) => (
-                        <Box key={item.label} mb={2}>
-                          <Button color="white" bg={idx === selectedIndex ? 'green.700' : 'none'}>
-                            <ChakraLink asChild>
+                        <Box key={item.label} mb={3}>
+                          <Button w="100%" borderRadius="0" color="white" bg={idx === selectedIndex ? 'green.700' : 'none'} _focus={{ boxShadow: 'none', outline: 'none' }}>
+                            <ChakraLink asChild fontSize="lg">
                               <NextLink href={item.url}>{item.label}</NextLink>
                             </ChakraLink>
                           </Button>
@@ -60,7 +59,6 @@ export default function NavBar() {
                       ))}
                     </Box>
                   </Drawer.Body>
-                  <Drawer.Footer />
                   <Drawer.CloseTrigger asChild></Drawer.CloseTrigger>
                 </Drawer.Content>
               </Drawer.Positioner>
