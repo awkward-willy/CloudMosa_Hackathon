@@ -27,8 +27,20 @@ export default function Page() {
     focusables.current[focusIndex]?.focus();
   }, [focusIndex]);
 
+  const isOverlayOpen = () => {
+    const backdrop = document.querySelector('[data-part="backdrop"]');
+    if (backdrop) return true;
+    
+    const modals = document.querySelectorAll('[role="dialog"], [data-state="open"]');
+    return modals.length > 0;
+  };
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      if (isOverlayOpen()) {
+        return;
+      }
+
       const key = e.key;
       const active = focusables.current[focusIndex];
       if (!active) return;
@@ -137,24 +149,54 @@ export default function Page() {
       }
 
       const queryAmount = lastChanged === "from" ? amount : convertedAmount;
-      if (queryAmount === undefined || queryAmount < 0) return;
+      
+      if (queryAmount === undefined || queryAmount <= 0 || !isFinite(queryAmount)) {
+        if (lastChanged === "from") {
+          setConvertedAmount(0);
+        } else {
+          setAmount(0);
+        }
+        setExchangeRate(null);
+        return;
+      }
+
       setLoading(true);
       try {
         const response = await fetch(
           `https://api.frankfurter.app/latest?amount=${queryAmount}&from=${lastChanged === "from" ? fromCurrency : toCurrency
           }&to=${lastChanged === "from" ? toCurrency : fromCurrency}`
         );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
+
+        if (!data.rates) {
+          throw new Error('Invalid response: rates not found');
+        }
+
         if (lastChanged === "from") {
-          setConvertedAmount(data.rates[toCurrency]);
-          setExchangeRate(data.rates[toCurrency] / amount);
+          const targetRate = data.rates[toCurrency];
+          if (targetRate === undefined) {
+            throw new Error(`Rate for ${toCurrency} not found`);
+          }
+          setConvertedAmount(targetRate);
+          setExchangeRate(targetRate / amount);
         } else {
-          setAmount(data.rates[fromCurrency]);
-          setExchangeRate(data.rates[fromCurrency] / (convertedAmount ?? 1));
+          const targetRate = data.rates[fromCurrency];
+          if (targetRate === undefined) {
+            throw new Error(`Rate for ${fromCurrency} not found`);
+          }
+          setAmount(targetRate);
+          setExchangeRate(targetRate / (convertedAmount ?? 1));
         }
         setLastUpdated(data.date);
       } catch (error) {
         console.error("Error converting currency:", error);
+        setExchangeRate(null);
+        setLastUpdated("");
       } finally {
         setLoading(false);
       }
