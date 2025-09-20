@@ -77,9 +77,10 @@ export async function login(state: FormState, formData: FormData) {
   const baseURL = process.env.BASE_URL;
   const res = await fetch(`${baseURL}/api/auth/token`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      grant_type: 'password',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
       username: username,
       password: password,
     }),
