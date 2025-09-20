@@ -27,8 +27,20 @@ export default function Page() {
     focusables.current[focusIndex]?.focus();
   }, [focusIndex]);
 
+  const isOverlayOpen = () => {
+    const backdrop = document.querySelector('[data-part="backdrop"]');
+    if (backdrop) return true;
+    
+    const modals = document.querySelectorAll('[role="dialog"], [data-state="open"]');
+    return modals.length > 0;
+  };
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      if (isOverlayOpen()) {
+        return;
+      }
+
       const key = e.key;
       const active = focusables.current[focusIndex];
       if (!active) return;
