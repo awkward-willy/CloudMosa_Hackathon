@@ -1,30 +1,21 @@
 import ReactMarkdown from "react-markdown";
+import { fetchFinancialTip } from "@/app/actions/FinancialTips/fetchFinancialTip";
 
-const financialTipMD = `
-**Simple Budgeting for Better Money Management**
+export const dynamic = "force-dynamic"; // always fetch fresh tip
 
-Managing your money can feel hard, but a simple budget helps you understand where your money goes. A budget is like a plan for your money, so you can make sure you have enough for what's important.
-
-1. Write down all your money coming in each month. This includes your salary, any extra money from work, or help from family.
-2. List all your spending. Think about food, transport, rent, and other things you pay for. Use a notebook or phone app.
-3. Compare your income and spending. See if you have more money coming in than going out. If not, think about ways to reduce spending.
-
-Example: I wrote down my $200 salary and $50 from extra work. Then I listed $100 for food, $50 for transport, and $30 for other things.
-
-Common mistake: Not writing down all your spending, especially small amounts.
-
-Tiny challenge: Write down everything you spend today, no matter how small.
-
-Tags: budgeting, personal finance, saving money · Level: A1
-`;
-
-export default function Page() {
+export default async function Page() {
+  const { tip, error } = await fetchFinancialTip();
   return (
     <main className="flex flex-1 flex-col items-center justify-start w-full space-y-6 p-4">
       <section className="w-full max-w-3xl text-left">
-        <ReactMarkdown>
-          {financialTipMD}
-        </ReactMarkdown>
+        {error && (
+          <div className="mb-4 rounded border border-red-300 bg-red-50 p-3 text-sm text-red-700">
+            Error: {error}
+          </div>
+        )}
+        <div className="prose prose-sm sm:prose-base dark:prose-invert max-w-none">
+          <ReactMarkdown>{tip}</ReactMarkdown>
+        </div>
       </section>
     </main>
   );
