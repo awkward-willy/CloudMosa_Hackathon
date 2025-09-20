@@ -13,6 +13,7 @@ from app.schemas import (
     PaginationMetadata,
     Transaction,
     TransactionCreate,
+    TransactionUpdate,
 )
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
@@ -83,6 +84,24 @@ async def read_transaction(
     transaction_repo = TransactionRepository(db)
     db_transaction = await transaction_repo.get_transaction_by_id(
         transaction_id=transaction_id, user_id=current_user.id
+    )
+    if db_transaction is None:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    return db_transaction
+
+
+@router.put("/{transaction_id}", response_model=Transaction)
+async def update_transaction(
+    transaction_id: uuid.UUID,
+    transaction_update: TransactionUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    transaction_repo = TransactionRepository(db)
+    db_transaction = await transaction_repo.update_transaction(
+        transaction_id=transaction_id,
+        transaction_update=transaction_update,
+        user_id=current_user.id,
     )
     if db_transaction is None:
         raise HTTPException(status_code=404, detail="Transaction not found")
