@@ -19,20 +19,7 @@ from tools.tx_loader import load_transactions
 from tools.advisor import analyze_transactions
 from tools.memory_tools import memory_get, memory_set, memory_append
 
-load_dotenv()
-
-
-def _build_llm():
-    model_id = os.getenv("MODEL_ID", "gemini-1.5-flash")
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise RuntimeError("GEMINI_API_KEY is not set.")
-    return ChatGoogleGenerativeAI(
-        model=model_id,
-        google_api_key=api_key,
-        temperature=0.2,
-    )
-
+from llm import get_llm
 
 tools = [
     load_transactions,
@@ -42,7 +29,7 @@ tools = [
     memory_append,
 ]
 
-_llm = _build_llm()
+_llm = get_llm(temperature=0.2)
 _bound_llm = _llm.bind_tools(tools)
 
 
