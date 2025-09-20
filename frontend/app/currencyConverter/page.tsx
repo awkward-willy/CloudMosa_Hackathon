@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 
+
 export default function Page() {
   const [amount, setAmount] = useState<number>(1);
   const [fromCurrency, setFromCurrency] = useState<string>("USD");
@@ -160,6 +161,42 @@ export default function Page() {
         setLoading(false);
       }
     };
+  const convertCurrency = async () => {
+    if (fromCurrency === toCurrency) {
+      if (lastChanged === "from") setConvertedAmount(amount);
+      else setAmount(convertedAmount);
+      setExchangeRate(1);
+      return;
+    }
+
+    const queryAmount = lastChanged === "from" ? amount : convertedAmount;
+
+    if (queryAmount === undefined || queryAmount < 0) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `https://api.frankfurter.app/latest?amount=${queryAmount}&from=${
+          lastChanged === "from" ? fromCurrency : toCurrency
+        }&to=${lastChanged === "from" ? toCurrency : fromCurrency}`
+      );
+      const data = await response.json();
+      if (lastChanged === "from") {
+        setConvertedAmount(data.rates[toCurrency]);
+        setExchangeRate(data.rates[toCurrency] / amount);
+      } else {
+        setAmount(data.rates[fromCurrency]);
+        setExchangeRate(data.rates[fromCurrency] / (convertedAmount ?? 1));
+      }
+      setLastUpdated(data.date);
+    } catch (error) {
+      console.error("Error converting currency:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     const timer = setTimeout(() => convertCurrency(), 300);
     return () => clearTimeout(timer);
   }, [amount, convertedAmount, fromCurrency, toCurrency, lastChanged]);
@@ -168,7 +205,6 @@ export default function Page() {
     focusIndex === idx
       ? "outline outline-2 outline-blue-500 outline-offset-0 z-10"
       : "outline-none";
-
   return (
     <main className="flex flex-1 flex-col justify-start w-full space-y-6">
       {/* Header */}
@@ -253,6 +289,22 @@ export default function Page() {
             value={toCurrency}
             onChange={(e) => setToCurrency(e.target.value)}
             className={`w-20 p-3 border border-gray-300 rounded-r-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-sm ${focusCls(3)}`}
+        <br/>
+        {/* To */}
+        <div className="flex w-full min-w-0">
+          <input
+            type="number"
+            value={convertedAmount}
+            onChange={(e) => {
+              setConvertedAmount(parseFloat(e.target.value) || 0);
+              setLastChanged("to");
+            }}
+            className="flex-1 min-w-0 p-3 border border-gray-300 rounded-l-md border-r-0 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+          />
+          <select
+            value={toCurrency}
+            onChange={(e) => setToCurrency(e.target.value)}
+            className="w-20 p-3 border border-gray-300 rounded-r-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-sm"
           >
             {currencies.map((c) => (
               <option key={c} value={c}>

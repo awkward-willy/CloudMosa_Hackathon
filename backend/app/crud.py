@@ -1,5 +1,6 @@
 import uuid
 
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -67,8 +68,15 @@ class TransactionRepository:
             .filter(Transaction.user_id == user_id)
             .offset(skip)
             .limit(limit)
+            .order_by(Transaction.time.desc())  # Order by most recent first
         )
         return list(result.scalars().all())
+
+    async def get_transactions_count_by_user(self, user_id: uuid.UUID) -> int:
+        result = await self.db.execute(
+            select(func.count(Transaction.id)).filter(Transaction.user_id == user_id)
+        )
+        return result.scalar() or 0
 
     async def update_transaction(
         self,
