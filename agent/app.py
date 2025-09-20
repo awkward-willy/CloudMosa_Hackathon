@@ -1,5 +1,7 @@
 from __future__ import annotations
 import argparse
+import json
+from pathlib import Path
 from typing import List
 from state import AgentState
 from graph.agent_graph import app
@@ -7,6 +9,7 @@ from langchain_core.messages import HumanMessage, AIMessage, ToolMessage, BaseMe
 
 
 def get_last_ai_message(messages: List[BaseMessage]) -> str:
+    """Return the most recent AI message content."""
     for m in reversed(messages):
         if isinstance(m, AIMessage):
             return m.content or ""
@@ -14,6 +17,7 @@ def get_last_ai_message(messages: List[BaseMessage]) -> str:
 
 
 def print_tail(messages: List[BaseMessage], tail: int = 10) -> None:
+    """Print the last few messages for debugging."""
     print("\n--- Conversation tail ---")
     for m in messages[-tail:]:
         if isinstance(m, HumanMessage):
@@ -31,6 +35,7 @@ def print_tail(messages: List[BaseMessage], tail: int = 10) -> None:
 
 
 def print_last_tool_calls(messages: List[BaseMessage]) -> None:
+    """Print names of tools used in the last AI message."""
     for m in reversed(messages):
         if isinstance(m, AIMessage):
             tc = getattr(m, "tool_calls", None)
@@ -42,13 +47,40 @@ def print_last_tool_calls(messages: List[BaseMessage]) -> None:
             return
 
 
+def load_json_records(path: Path):
+    """Load transactions from JSON file."""
+    with path.open("r", encoding="utf-8") as f:
+        data = json.load(f)
+    if not isinstance(data, list):
+        raise ValueError("JSON must be a list of transaction objects.")
+    return data
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--debug", action="store_true", help="Print internal messages and tool calls.")
+    parser.add_argument(
+        "--json",
+        type=Path,
+        default=Path("data/sample_transactions.json"),
+        help="Path to JSON transactions file."
+    )
+    parser.add_argument(
+        "--debug", action="store_true",
+        help="Print internal messages and tool calls."
+    )
     args = parser.parse_args()
 
     print("\n=== Finance Agent (with long-term memory) ===")
-    state: AgentState = {"messages": []}
+
+    # Load transactions at start (instead of CSV)
+    if args.json.exists():
+        records = load_json_records(args.json)
+        print(f"Loaded {len(records)} transactions from {args.json}")
+        # Inject a HumanMessage so agent knows dataset exists
+        init_msg = HumanMessage(content="Dataset loaded and ready.")
+        state: AgentState = {"messages": [init_msg]}
+    else:
+        state: AgentState = {"messages": []}
 
     while True:
         user_input = input("\nYou: ")

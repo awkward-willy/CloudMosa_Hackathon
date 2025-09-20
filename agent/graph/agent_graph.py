@@ -16,15 +16,16 @@ from langgraph.prebuilt import ToolNode
 from state import AgentState
 from llm import get_llm
 
-from tools.tx_loader import load_transactions
+# NOTE: replace the old CSV loader with JSON ingest
+from tools.tx_ingest import ingest_transactions
 from tools.advisor import analyze_transactions
 from tools.memory_tools import memory_get, memory_set, memory_append
 from tools.financial_tips import generate_financial_tip, list_recent_tips
 
 
 tools = [
-    load_transactions,
-    analyze_transactions,
+    ingest_transactions,         # JSON array -> basic validation/ack
+    analyze_transactions,        # compute summary + advice from records
     memory_get,
     memory_set,
     memory_append,
@@ -66,7 +67,7 @@ def _format_tip(result: str) -> str:
 
 
 def our_agent(state: AgentState) -> AgentState:
-    # Intercept tip requests and force tool usage
+    # Intercept daily tip requests and force tool usage
     if state["messages"]:
         last_user = _last_user_text(state["messages"])
         if last_user and re.search(r"\b(tip|tips|today'?s tip|daily tip)\b", last_user, flags=re.I):
@@ -79,12 +80,17 @@ def our_agent(state: AgentState) -> AgentState:
     system = SystemMessage(
         content=(
             """You are a concise personal finance assistant.
+
 - On the first turn, call memory_get('profile') and memory_get('last_summary') if available.
-- If the user does not specify a CSV path, always use 'data/sample_transactions.csv' as the default.
-- Use tools to load_transactions(path) and analyze_transactions(path) to produce advice.
-- After producing suggestions, update long-term memory via memory_append('advice_history', ...) and memory_set('last_summary', ...).
-- Provide 3-5 numbered, actionable bullet points under 150 words.
-- You can call generate_financial_tip(locale, theme) to produce a daily low-literacy tip, and list_recent_tips(n, locale) to review recent tips.
+- Transactions are provided as a JSON array where each item is:
+  { income: bool, description: string, amount: number, type: string }.
+- Use tools in this order when needed:
+  1) ingest_transactions(records) to acknowledge the dataset is present
+  2) analyze_transactions(records) to compute summary and recommendations
+- After producing suggestions, update long-term memory via:
+  memory_append('advice_history', ...) and memory_set('last_summary', ...).
+- Provide 3–5 numbered, actionable bullet points under 150 words.
+- You may call generate_financial_tip(locale, theme) and list_recent_tips(n, locale) for daily education content.
 - When the user asks for a tip (e.g., "tip", "today's tip", "daily tip"), you must call `generate_financial_tip` and must not write the tip by yourself.
 """
         )
