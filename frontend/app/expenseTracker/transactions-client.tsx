@@ -219,75 +219,99 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
         }
     }, [selectedIndex]);
 
+    interface GroupedTransaction extends Transaction {
+        originalIndex: number;
+    }
+
+    interface TransactionGroup {
+        [date: string]: GroupedTransaction[];
+    }
+
+    const groupTransactionsByDate = (transactions: Transaction[]): TransactionGroup => {
+        const groups: TransactionGroup = {};
+        
+        transactions.forEach((tx, originalIndex) => {
+            let raw = tx.time;
+            if (!/[zZ]|[+-]\d{2}:?\d{2}$/.test(raw)) {
+                raw = raw + 'Z';
+            }
+            const date = new Date(raw);
+            const dateKey = date.toLocaleDateString('zh-TW', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                timeZone: 'Asia/Taipei'
+            }).replace(/\//g, '/');
+            
+            if (!groups[dateKey]) {
+                groups[dateKey] = [];
+            }
+            groups[dateKey].push({ ...tx, originalIndex });
+        });
+        
+        return groups;
+    };
+
+    const groupedTransactions: TransactionGroup = groupTransactionsByDate(transactions);
+
     return (
         <div className="w-full">
             <div className="space-y-1">
                 {/* Add new transaction pseudo item */}
                 <div
-                    className={`border rounded px-2 py-1 text-left cursor-pointer ${selectedIndex === 0 ? 'bg-green-600 text-white' : 'bg-gray-50'} transition-colors`}
+                    className={`flex items-center gap-3 border text-left cursor-pointer ${selectedIndex === 0 ? 'bg-gray-200 text-gray-700' : 'bg-white text-gray-500'} transition-colors`}
+                    style={{ padding: '10px' }}
                     onClick={() => setSelectedIndex(0)}
                     onDoubleClick={openCreateDrawer}
                 >
-                    <div className="text-sm font-semibold">+ Add new transaction</div>
-                    <div className="text-[11px] opacity-80">Press Enter to create</div>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${selectedIndex === 0 ? 'bg-gray-400' : 'bg-gray-300'}`}>
+                        <p className="text-white text-4xl">+</p>
+                    </div>
+                    <div className="flex-1">
+                        <div className="text-sm font-semibold">Add new transaction</div>
+                        <div className="text-[11px] opacity-80">Press Enter to create</div>
+                    </div>
                 </div>
-                {transactions.map((tx, idx) => {
-                    const listIndex = idx + 1; // shift by one
-                    const active = listIndex === selectedIndex;
-                    return (
-                        <div
-                            key={tx.id}
-                            className={`border rounded px-2 py-1 text-left cursor-pointer ${active ? 'bg-blue-600 text-white' : 'bg-gray-50'} transition-colors`}
-                            onClick={() => setSelectedIndex(listIndex)}
-                            onDoubleClick={() => setEditing(tx)}
-                            ref={el => {
-                                if (active && el) {
-                                    el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                                }
-                            }}
-                        >
-                            <div className="text-sm font-semibold truncate">{tx.description}</div>
-                            <div className="text-[11px] opacity-80">
-                                <p className='inline-block'>
-                                    {tx.income ? '+' : '-'}${Number(tx.amount).toFixed(2)}
-                                </p>
-                                {' | '}
-                                <p className='inline-block'>
-                                    {tx.type}
-                                </p>
-                                {' | '}
-                                <p className='inline-block'>
-                                    {(() => {
-                                        let raw = tx.time;
-                                        // 若沒有時區標記（不含 Z 或 +/-）
-                                        if (!/[zZ]|[+-]\d{2}:?\d{2}$/.test(raw)) {
-                                            raw = raw + 'Z';
-                                        }
-                                        const d = new Date(raw);
-                                        const locale = 'zh-TW';
-                                        const dtf = new Intl.DateTimeFormat(locale, {
-                                            year: 'numeric',
-                                            month: '2-digit',
-                                            day: '2-digit',
-                                            hour: '2-digit',
-                                            minute: '2-digit',
-                                            hour12: false,
-                                            timeZone: 'Asia/Taipei'
-                                        });
-                                        const parts = dtf.formatToParts(d);
-                                        const get = (type: string) => parts.find(p => p.type === type)?.value || '';
-                                        const year = get('year');
-                                        const month = get('month');
-                                        const day = get('day');
-                                        const hour = get('hour');
-                                        const minute = get('minute');
-                                        return `${year}/${month}/${day}, ${hour}:${minute}`;
-                                    })()}
-                                </p>
-                            </div>
+
+                {Object.entries(groupedTransactions).map(([date, dateTransactions]: [string, GroupedTransaction[]]) => (
+                    <div key={date}>
+                        <div className="bg-[#16a34a] text-sm font-medium text-white text-left" style={{ padding: '2px 10px' }}>
+                            {date}
                         </div>
-                    );
-                })}
+                        
+                        {dateTransactions.map((tx: GroupedTransaction) => {
+                            const listIndex = tx.originalIndex + 1;
+                            const active = listIndex === selectedIndex;
+                            return (
+                                <div
+                                    key={tx.id}
+                                    className={`flex items-center gap-3 text-left cursor-pointer ${active ? 'bg-gray-200 text-gray-700' : 'bg-white text-gray-500'} transition-colors border-b border-gray-100`}
+                                    style={{ padding: '10px' }}
+                                    onClick={() => setSelectedIndex(listIndex)}
+                                    onDoubleClick={() => setEditing(tx)}
+                                    ref={el => {
+                                        if (active && el) {
+                                            el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                                        }
+                                    }}
+                                >
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${active ? 'bg-gray-400' : 'bg-gray-300'} mr-3`}>
+                                        {/* icon base on {tx.type}*/}
+                                    </div>
+                                    <div className="text-sm font-semibold truncate flex-1 min-w-0">
+                                        {tx.description}
+                                    </div>
+                                    <div 
+                                        className="ml-3 flex-shrink-0 opacity-80" 
+                                        style={{ fontWeight: tx.income ? 'bold' : 'normal' }}
+                                    >
+                                        {tx.income ? '+' : '-'}${Number(tx.amount).toFixed(2)}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ))}
             </div>
 
             {metadata.has_next && (

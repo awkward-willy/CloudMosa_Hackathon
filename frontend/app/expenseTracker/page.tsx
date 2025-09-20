@@ -28,7 +28,6 @@ export default async function Page() {
   if (!res.ok) {
     return (
       <main className="flex flex-1 flex-col items-center justify-center space-y-4">
-        <h1 className="text-lg font-bold text-gray-600">Expense Tracker</h1>
         <p className="text-red-600 text-sm">Failed to load transactions ({res.status})</p>
       </main>
     );
@@ -36,8 +35,7 @@ export default async function Page() {
   const data: PaginatedResponse = await res.json();
   console.log('Fetched transactions:', data);
   return (
-    <main className="flex flex-1 flex-col items-center justify-start w-full max-w-md mx-auto p-2 space-y-2">
-      <h1 className="text-lg font-bold text-gray-600">Expense Tracker</h1>
+    <main className="flex flex-1 flex-col items-center justify-start w-65 space-y-6">
       <TransactionsClient initialTransactions={data.items} initialMetadata={data.metadata} pageSize={pageSize} />
     </main>
   );
