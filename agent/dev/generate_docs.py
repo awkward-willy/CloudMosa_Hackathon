@@ -1,7 +1,6 @@
 import ast
-import os
-from pathlib import Path
 import re
+from pathlib import Path
 
 DOCS_DIR = Path("./docs")
 DOCS_DIR.mkdir(exist_ok=True)
@@ -14,7 +13,9 @@ TOOLS_DIR = Path("tools")
 def extract_system_prompt() -> str:
     text = GRAPH_FILE.read_text(encoding="utf-8")
     # Match the SystemMessage content string
-    match = re.search(r'SystemMessage\(.*?content=\(\s*"""?(.+?)"""?\s*\)\)', text, re.S)
+    match = re.search(
+        r'SystemMessage\(.*?content=\(\s*"""?(.+?)"""?\s*\)\)', text, re.S
+    )
     if match:
         return match.group(1).strip()
     # fallback: look for content=(...) string
@@ -32,7 +33,8 @@ def extract_tools() -> list[tuple[str, str]]:
         for node in tree.body:
             if isinstance(node, ast.FunctionDef):
                 has_tool_decorator = any(
-                    isinstance(d, ast.Name) and d.id == "tool"
+                    isinstance(d, ast.Name)
+                    and d.id == "tool"
                     or (isinstance(d, ast.Attribute) and d.attr == "tool")
                     for d in node.decorator_list
                 )

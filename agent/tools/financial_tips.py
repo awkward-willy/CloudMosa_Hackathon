@@ -1,8 +1,10 @@
 from __future__ import annotations
-from langchain_core.tools import tool
-from typing import List, Dict, Any, Optional
+
 import datetime as dt
 import json
+from typing import Any, Dict, List, Optional
+
+from langchain_core.tools import tool
 
 from llm import get_llm
 from memory.memory_store import MemoryStore
@@ -24,6 +26,7 @@ _SYSTEM_INSTR = (
     "In body, keep the exact headings and markers: numbered steps (1., 2., 3.), and the labels 'Example:', 'Common mistake:', 'Tiny challenge:'."
 )
 
+
 def _parse_json(text: str) -> Optional[Dict[str, Any]]:
     text = (text or "").strip()
     if not text:
@@ -38,6 +41,7 @@ def _parse_json(text: str) -> Optional[Dict[str, Any]]:
             except Exception:
                 return None
     return None
+
 
 def _normalize_entry(entry: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     if not isinstance(entry, dict):
@@ -58,6 +62,7 @@ def _normalize_entry(entry: Dict[str, Any]) -> Optional[Dict[str, Any]]:
 
     return {"title": title, "body": body, "tags": tags, "reading_level": level}
 
+
 @tool
 def generate_financial_tip(locale: str = "en", theme: str = "budgeting") -> str:
     """Return today's financial tip for the given locale and theme (generate once; keep last 30 days). JSON string."""
@@ -67,7 +72,11 @@ def generate_financial_tip(locale: str = "en", theme: str = "budgeting") -> str:
         tips = []
 
     for entry in reversed(tips):
-        if entry.get("date") == today and entry.get("locale") == locale and entry.get("theme") == theme:
+        if (
+            entry.get("date") == today
+            and entry.get("locale") == locale
+            and entry.get("theme") == theme
+        ):
             return json.dumps(entry["tip"], ensure_ascii=False)
 
     llm = get_llm(temperature=0.5)
@@ -95,6 +104,7 @@ def generate_financial_tip(locale: str = "en", theme: str = "budgeting") -> str:
     _STORE.set("last_tip", record)
 
     return json.dumps(tip, ensure_ascii=False)
+
 
 @tool
 def list_recent_tips(n: int = 7, locale: str = "", theme: str = "") -> str:

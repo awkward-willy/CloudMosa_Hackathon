@@ -1,31 +1,31 @@
 from __future__ import annotations
-import re
+
 import json
+import re
 from typing import Sequence
 
 from langchain_core.messages import (
+    AIMessage,
     BaseMessage,
     HumanMessage,
-    AIMessage,
-    ToolMessage,
     SystemMessage,
+    ToolMessage,
 )
-from langgraph.graph import StateGraph, END
+from langgraph.graph import END, StateGraph
 from langgraph.prebuilt import ToolNode
 
-from state import AgentState
 from llm import get_llm
+from state import AgentState
+from tools.advisor import analyze_transactions
+from tools.financial_tips import generate_financial_tip, list_recent_tips
+from tools.memory_tools import memory_append, memory_get, memory_set
 
 # NOTE: replace the old CSV loader with JSON ingest
 from tools.tx_ingest import ingest_transactions
-from tools.advisor import analyze_transactions
-from tools.memory_tools import memory_get, memory_set, memory_append
-from tools.financial_tips import generate_financial_tip, list_recent_tips
-
 
 tools = [
-    ingest_transactions,         # JSON array -> basic validation/ack
-    analyze_transactions,        # compute summary + advice from records
+    ingest_transactions,  # JSON array -> basic validation/ack
+    analyze_transactions,  # compute summary + advice from records
     memory_get,
     memory_set,
     memory_append,
@@ -70,8 +70,12 @@ def our_agent(state: AgentState) -> AgentState:
     # Intercept daily tip requests and force tool usage
     if state["messages"]:
         last_user = _last_user_text(state["messages"])
-        if last_user and re.search(r"\b(tip|tips|today'?s tip|daily tip)\b", last_user, flags=re.I):
-            result = generate_financial_tip.invoke({"locale": "en", "theme": "budgeting"})
+        if last_user and re.search(
+            r"\b(tip|tips|today'?s tip|daily tip)\b", last_user, flags=re.I
+        ):
+            result = generate_financial_tip.invoke(
+                {"locale": "en", "theme": "budgeting"}
+            )
             pretty = _format_tip(result)
             tool_msg = ToolMessage(content=result, tool_call_id="tip-direct")
             ai_msg = AIMessage(content=f"Here's today's tip:\n{pretty}")

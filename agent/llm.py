@@ -1,9 +1,11 @@
 import os
+
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 # Load .env once
 load_dotenv()
+
 
 def get_llm(temperature: float = 0.2):
     model_id = os.getenv("MODEL_ID", "gemini-1.5-flash")
