@@ -6,6 +6,7 @@ import { createTransactionAction } from '@/app/actions/expenseTracker/createTran
 import { updateTransactionAction } from '@/app/actions/expenseTracker/updateTransaction';
 import { deleteTransactionAction } from '@/app/actions/expenseTracker/deleteTransaction';
 import { fetchTransactionsPage } from '@/app/actions/expenseTracker/fetchTransaction';
+import { CATEGORY_OPTIONS, getCategoryIcon } from '@/app/expenseTracker/constants/categories';
 import { Drawer } from '@chakra-ui/react';
 
 interface Transaction {
@@ -312,7 +313,7 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                                     }}
                                 >
                                     <div className={`w-8 h-8 rounded-full flex items-center justify-center ${active ? 'bg-gray-400' : 'bg-gray-300'} mr-3`}>
-                                        {/* icon base on {tx.type}*/}
+                                        <span className="text-lg" aria-label={tx.type}>{getCategoryIcon(tx.type)}</span>
                                     </div>
                                     <div className="text-sm font-semibold truncate flex-1 min-w-0">
                                         {tx.description}
@@ -340,13 +341,13 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
             <Drawer.Root open={!!editing} onOpenChange={(v) => { if (!v.open) setEditing(null); }} placement="end">
                 <Drawer.Backdrop />
                 <Drawer.Positioner>
-                    <Drawer.Content className="w-80 max-w-[90vw]" id="edit-drawer-content" bg={"white"}>
+                    <Drawer.Content className="w-80 max-w-[90vw] flex flex-col max-h-screen" id="edit-drawer-content" bg={"white"}>
                         {editing && (
-                            <div className="flex flex-col h-full">
+                            <div className="flex flex-col h-full flex-1 min-h-0">{/* min-h-0 確保子元素 overflow 正常 */}
                                 <div className="px-4 py-3 border-b flex items-center justify-between">
                                     <h2 className="font-bold text-sm">Edit Transaction</h2>
                                 </div>
-                                <div className="p-4 overflow-y-auto flex-1">
+                                <div className="p-4 overflow-y-auto flex-1" style={{ WebkitOverflowScrolling: 'touch' }}>
                                     <form action={formAction} className="space-y-3" onSubmit={() => { /* no-op */ }}>
                                         <input type="hidden" name="id" value={editing.id} />
                                         <div className="flex flex-col text-left gap-1">
@@ -384,6 +385,30 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                                                 required
                                                 data-focusable
                                             />
+                                            {/* 類別快速選擇 */}
+                                            <div className="flex flex-wrap gap-1 pt-1">
+                                                {CATEGORY_OPTIONS.map(cat => {
+                                                    const active = localForm.type === cat;
+                                                    return (
+                                                        <button
+                                                            type="button"
+                                                            key={cat}
+                                                            className={`px-2 py-0.5 rounded border flex items-center gap-1 text-[10px] focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors ${active ? 'bg-blue-600 text-white border-blue-600' : 'bg-white hover:bg-gray-100'}`}
+                                                            onClick={() => setLocalForm(p => ({ ...p, type: cat }))}
+                                                            data-focusable
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    e.preventDefault();
+                                                                    setLocalForm(p => ({ ...p, type: cat }));
+                                                                }
+                                                            }}
+                                                        >
+                                                            <span>{getCategoryIcon(cat)}</span>
+                                                            <span>{cat}</span>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <input
@@ -450,11 +475,11 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
             <Drawer.Root open={creating} onOpenChange={(v) => { if (!v.open) closeCreateDrawer(); }} placement="end">
                 <Drawer.Backdrop />
                 <Drawer.Positioner>
-                    <Drawer.Content className="w-80 max-w-[90vw]" id="create-drawer-content" bg="white">
-                        <div className="flex items-center justify-between px-4 py-3 border-b">
+                    <Drawer.Content className="w-80 max-w-[90vw] flex flex-col max-h-screen" id="create-drawer-content" bg="white">
+                        <div className="flex items-center justify-between px-4 py-3 border-b flex-shrink-0">
                             <h2 className="font-bold text-sm">New Transaction</h2>
                         </div>
-                        <div className="p-4 space-y-3 text-left">
+                        <div className="p-4 space-y-3 text-left overflow-y-auto flex-1 min-h-0" style={{ WebkitOverflowScrolling: 'touch' }}>
                             <div className="flex flex-col text-left gap-1">
                                 <label className="text-xs font-medium">Description</label>
                                 <input
@@ -487,6 +512,29 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                                     placeholder="Type"
                                     data-focusable
                                 />
+                                <div className="flex flex-wrap gap-1 pt-1">
+                                    {CATEGORY_OPTIONS.map(cat => {
+                                        const active = createForm.type === cat;
+                                        return (
+                                            <button
+                                                type="button"
+                                                key={cat}
+                                                className={`px-2 py-0.5 rounded border flex items-center gap-1 text-[10px] focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors ${active ? 'bg-blue-600 text-white border-blue-600' : 'bg-white hover:bg-gray-100'}`}
+                                                onClick={() => setCreateForm(p => ({ ...p, type: cat }))}
+                                                data-focusable
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        e.preventDefault();
+                                                        setCreateForm(p => ({ ...p, type: cat }));
+                                                    }
+                                                }}
+                                            >
+                                                <span>{getCategoryIcon(cat)}</span>
+                                                <span>{cat}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
                             </div>
                             <div className="flex items-center gap-2">
                                 <input
@@ -507,7 +555,10 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                             </div>
                             {createState?.error && <p className="text-[11px] text-red-600">{createState.error}</p>}
                             {createState?.success && <p className="text-[11px] text-green-600">Create successful</p>}
+                        </div>
+                        <div className="px-4 pt-2 pb-4 border-t flex-shrink-0">
                             <form
+                                className="w-full"
                                 action={createAction}
                                 onSubmit={(e) => {
                                     const fd = new FormData();
@@ -521,7 +572,7 @@ export default function TransactionsClient({ initialTransactions, initialMetadat
                                     e.preventDefault();
                                 }}
                             >
-                                <div className="flex gap-2 pt-2">
+                                <div className="flex gap-2">
                                     <button
                                         type="button"
                                         onClick={closeCreateDrawer}
