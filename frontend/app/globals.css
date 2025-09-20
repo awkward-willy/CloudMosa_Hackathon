@@ -89,6 +89,7 @@ input {
 }
 
 button {
+  margin: 0.5rem 0;
   color: white;
   background-color: var(--color-green-600);
 }
