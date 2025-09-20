@@ -6,13 +6,9 @@ import {
   type ColorModeProviderProps,
 } from "./color-mode"
 
-const system = createSystem(defaultConfig, { 
-  preflight: false 
-})
-
 export function Provider(props: ColorModeProviderProps) {
   return (
-    <ChakraProvider value={system}>
+    <ChakraProvider value={defaultSystem}>
       <ColorModeProvider {...props} />
     </ChakraProvider>
   )
