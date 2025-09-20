@@ -1,7 +1,44 @@
-export default function Page() {
+import { authFetch } from '@/app/lib/auth-fetch';
+import TransactionsClient from '@/app/expenseTracker/transactions-client';
+
+interface Transaction {
+  id: string;
+  income: boolean;
+  description: string;
+  amount: number;
+  type: string;
+  time: string;
+}
+
+interface PaginatedResponse {
+  items: Transaction[];
+  metadata: {
+    page: number;
+    page_size: number;
+    total_items: number;
+    total_pages: number;
+    has_next: boolean;
+    has_previous: boolean;
+  };
+}
+
+export default async function Page() {
+  const pageSize = 20;
+  const res = await authFetch(`${process.env.BASE_URL}/api/transactions/?page=1&page_size=${pageSize}`, { cache: 'no-store' });
+  if (!res.ok) {
+    return (
+      <main className="flex flex-1 flex-col items-center justify-center space-y-4">
+        <h1 className="text-lg font-bold text-gray-600">Expense Tracker</h1>
+        <p className="text-red-600 text-sm">Failed to load transactions ({res.status})</p>
+      </main>
+    );
+  }
+  const data: PaginatedResponse = await res.json();
+  console.log('Fetched transactions:', data);
   return (
-    <main className="flex flex-1 flex-col items-center justify-center space-y-4">
+    <main className="flex flex-1 flex-col items-center justify-start w-full max-w-md mx-auto p-2 space-y-2">
       <h1 className="text-lg font-bold text-gray-600">Expense Tracker</h1>
+      <TransactionsClient initialTransactions={data.items} initialMetadata={data.metadata} pageSize={pageSize} />
     </main>
   );
 }
