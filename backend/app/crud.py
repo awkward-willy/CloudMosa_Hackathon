@@ -1,4 +1,5 @@
 import uuid
+from typing import Optional
 
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -61,21 +62,39 @@ class TransactionRepository:
         return result.scalars().first()
 
     async def get_transactions_by_user(
-        self, user_id: uuid.UUID, skip: int = 0, limit: int = 100
+        self,
+        user_id: uuid.UUID,
+        skip: int = 0,
+        limit: int = 100,
+        income: Optional[bool] = None,
+        type: Optional[str] = None,
     ) -> list[Transaction]:
+        query = select(Transaction).filter(Transaction.user_id == user_id)
+        if income is not None:
+            query = query.filter(Transaction.income == income)
+        if type is not None:
+            query = query.filter(Transaction.type == type)
         result = await self.db.execute(
-            select(Transaction)
-            .filter(Transaction.user_id == user_id)
-            .offset(skip)
+            query.offset(skip)
             .limit(limit)
             .order_by(Transaction.time.desc())  # Order by most recent first
         )
         return list(result.scalars().all())
 
-    async def get_transactions_count_by_user(self, user_id: uuid.UUID) -> int:
-        result = await self.db.execute(
-            select(func.count(Transaction.id)).filter(Transaction.user_id == user_id)
+    async def get_transactions_count_by_user(
+        self,
+        user_id: uuid.UUID,
+        income: Optional[bool] = None,
+        type: Optional[str] = None,
+    ) -> int:
+        query = select(func.count(Transaction.id)).filter(
+            Transaction.user_id == user_id
         )
+        if income is not None:
+            query = query.filter(Transaction.income == income)
+        if type is not None:
+            query = query.filter(Transaction.type == type)
+        result = await self.db.execute(query)
         return result.scalar() or 0
 
     async def update_transaction(

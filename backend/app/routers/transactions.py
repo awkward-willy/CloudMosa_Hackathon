@@ -1,5 +1,6 @@
 import math
 import uuid
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -37,6 +38,10 @@ async def read_transactions(
     page_size: int = Query(
         10, ge=1, le=100, description="Number of items per page (max 100)"
     ),
+    income: Optional[bool] = Query(
+        None, description="Filter by income (true) or expense (false)"
+    ),
+    type: Optional[str] = Query(None, description="Filter by transaction type"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -47,10 +52,10 @@ async def read_transactions(
 
     # Get transactions and total count
     transactions = await transaction_repo.get_transactions_by_user(
-        user_id=current_user.id, skip=skip, limit=page_size
+        user_id=current_user.id, skip=skip, limit=page_size, income=income, type=type
     )
     total_count = await transaction_repo.get_transactions_count_by_user(
-        user_id=current_user.id
+        user_id=current_user.id, income=income, type=type
     )
 
     # Calculate pagination metadata
