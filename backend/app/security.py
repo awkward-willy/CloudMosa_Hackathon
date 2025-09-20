@@ -14,7 +14,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def get_password_hash(password: str) -> str:
     """Hash a password for storing."""
-    return bcrypt.hash(password, salt=settings.salt.encode())
+    return bcrypt.hash(password, salt=settings.salt)
 
 
 def create_access_token(
