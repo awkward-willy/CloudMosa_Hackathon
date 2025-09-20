@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     # Application settings
     app_name: str = "CloudMosa Accounting API"
     debug: bool = False
+    agent_base_url: str = "http://agent:8000"
 
     # JWT settings
     secret_key: str = "super-secret-key"

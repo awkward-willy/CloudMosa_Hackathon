@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr
 
@@ -73,3 +73,8 @@ class PaginatedTransactions(BaseModel):
 class GetFinancialAdviceRequest(BaseModel):
     user_uuid: uuid.UUID
     days: int
+    output_format: Literal["text", "audio"]
+
+
+class FinancialAdviceResponse(BaseModel):
+    advice: str

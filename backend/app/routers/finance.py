@@ -1,12 +1,14 @@
 import httpx
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.crud import TransactionRepository
 from app.database import get_db
 from app.models import User
 from app.routers.auth import get_current_user
-from app.schemas import GetFinancialAdviceRequest
+from app.schemas import FinancialAdviceResponse, GetFinancialAdviceRequest
 
 router = APIRouter()
 
@@ -15,7 +17,7 @@ router = APIRouter()
 async def get_tip():
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.get("http://agent/api/tip")
+            response = await client.get(f"{settings.agent_base_url}/api/tip")
             response.raise_for_status()
             tip_text = response.text
             return {"tip": tip_text if tip_text else "No tip available"}
@@ -25,12 +27,12 @@ async def get_tip():
             raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
-@router.post("/advice")
+@router.post("/advice", response_model=None)
 async def get_financial_advice(
     request: GetFinancialAdviceRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> str:
+):
     """
     Generate personalized financial advice based on user's recent transaction records.
 
@@ -38,10 +40,10 @@ async def get_financial_advice(
     to the agent service to get financial advice.
 
     Args:
-        request: Request containing the number of recent days to analyze
+        request: Request containing the number of recent days to analyze and output format
 
     Returns:
-        str: Personalized financial advice as plain text
+        JSON response for text format or Response with audio binary data
 
     Raises:
         HTTPException: If the agent service call fails or database query fails
@@ -68,15 +70,30 @@ async def get_financial_advice(
         agent_request_data = {
             "user_uuid": str(current_user.id),
             "transactions": transaction_data,
+            "output_format": request.output_format,
         }
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                "http://agent/api/advice", json=agent_request_data
+                f"{settings.agent_base_url}/api/advice",
+                json=agent_request_data,
+                timeout=60,
             )
             response.raise_for_status()
-            advice_text = response.text
-            return advice_text if advice_text else "No advice available"
+
+            if request.output_format == "audio":
+                # Return audio binary data with appropriate content type
+                return Response(
+                    content=response.content,
+                    media_type="audio/mpeg",
+                    headers={"Content-Disposition": "attachment; filename=advice.mp3"},
+                )
+            else:
+                # Return text response as JSON
+                advice_text = response.text
+                return FinancialAdviceResponse(
+                    advice=advice_text if advice_text else "No advice available"
+                )
 
     except httpx.RequestError as e:
         raise HTTPException(status_code=500, detail=f"Error fetching advice: {str(e)}")
