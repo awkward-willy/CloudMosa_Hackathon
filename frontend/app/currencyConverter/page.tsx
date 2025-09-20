@@ -217,7 +217,7 @@ export default function Page() {
         {lastChanged === "from" ? amount : convertedAmount?.toFixed(4)}{" "}
         {lastChanged === "from" ? fromCurrency : toCurrency} equals
       </p>
-      <h2 className="text-3xl font-bold mb-2 text-left">
+      <h2 className="text-3xl font-bold mb-2 text-left" style={{ margin: '0 0 0.5rem 0' }}>
         {loading ? (
           <span className="text-gray-300">Loading...</span>
         ) : lastChanged === "from" ? (
@@ -235,9 +235,9 @@ export default function Page() {
 
       {/* Exchange Rate Display */}
       {exchangeRate && !loading && (
-        <div className="text-left text-sm text-gray-600 pt-2 border-t border-gray-100">
+        <div className="text-left text-sm text-gray-600">
           {lastUpdated && (
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-gray-400" style={{ margin: '0 0 0.5rem 0' }}>
               Last updated: {lastUpdated} <br /> Source: Frankfurter
             </p>
           )}
@@ -275,7 +275,6 @@ export default function Page() {
             ))}
           </select>
         </div>
-        <br />
         {/* To */}
         <div className="flex w-full min-w-0">
           <input
