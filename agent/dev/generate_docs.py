@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 import re
 
-DOCS_DIR = Path("docs")
+DOCS_DIR = Path("./docs")
 DOCS_DIR.mkdir(exist_ok=True)
 OUTPUT_FILE = DOCS_DIR / "agent_design.md"
 

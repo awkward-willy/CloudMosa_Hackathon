@@ -3,6 +3,39 @@
   "last_summary": "Increase savings; Reduce spending; Create a budget; Review subscriptions; Aim for higher savings rate given income.",
   "advice_history": [
     "Increase savings; Reduce spending; Create a budget; Review subscriptions.",
-    "Aim for higher savings rate given income."
-  ]
+    "Aim for higher savings rate given income.",
+    "Increase savings; Reduce spending; Create a budget; Review subscriptions; Aim for higher savings rate given income."
+  ],
+  "daily_tips": [
+    {
+      "date": "2025-09-20",
+      "locale": "en",
+      "theme": "budgeting",
+      "tip": {
+        "title": "Simple Budgeting for Better Money Management",
+        "body": "Managing your money can feel hard, but a simple budget helps you understand where your money goes.  A budget is like a plan for your money, so you can make sure you have enough for what's important.\n\n1. Write down all your money coming in each month. This includes your salary, any extra money from work, or help from family.\n2. List all your spending. Think about food, transport, rent, and other things you pay for.  Use a notebook or phone app.\n3. Compare your income and spending.  See if you have more money coming in than going out. If not, think about ways to reduce spending.\n\nExample: I wrote down my $200 salary and $50 from extra work. Then I listed $100 for food, $50 for transport, and $30 for other things. \n\nCommon mistake: Not writing down all your spending, especially small amounts. \n\nTiny challenge: Write down everything you spend today, no matter how small.",
+        "tags": [
+          "budgeting",
+          "personal finance",
+          "saving money"
+        ],
+        "reading_level": "A1"
+      }
+    }
+  ],
+  "last_tip": {
+    "date": "2025-09-20",
+    "locale": "en",
+    "theme": "budgeting",
+    "tip": {
+      "title": "Simple Budgeting for Better Money Management",
+      "body": "Managing your money can feel hard, but a simple budget helps you understand where your money goes.  A budget is like a plan for your money, so you can make sure you have enough for what's important.\n\n1. Write down all your money coming in each month. This includes your salary, any extra money from work, or help from family.\n2. List all your spending. Think about food, transport, rent, and other things you pay for.  Use a notebook or phone app.\n3. Compare your income and spending.  See if you have more money coming in than going out. If not, think about ways to reduce spending.\n\nExample: I wrote down my $200 salary and $50 from extra work. Then I listed $100 for food, $50 for transport, and $30 for other things. \n\nCommon mistake: Not writing down all your spending, especially small amounts. \n\nTiny challenge: Write down everything you spend today, no matter how small.",
+      "tags": [
+        "budgeting",
+        "personal finance",
+        "saving money"
+      ],
+      "reading_level": "A1"
+    }
+  }
 }

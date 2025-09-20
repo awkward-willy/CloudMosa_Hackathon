@@ -3,7 +3,7 @@ from graph.agent_graph import app
 
 def main():
     g = app.get_graph()
-    out_path = "agent_graph.mmd"
+    out_path = "./docs/agent_graph.mmd"
     with open(out_path, "w") as f:
         f.write(g.draw_mermaid())
     print(f"Mermaid source saved to {out_path}")
