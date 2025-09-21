@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useTransition } from 'react';
 import { Spinner } from '@chakra-ui/react';
 import ReactMarkdown from 'react-markdown';
 import { fetchFinancialAnalysisAudio } from '@/app/actions/financialAnalysis/fetchFinancialAnalysisAudio';
+import { RxSpeakerLoud } from "react-icons/rx";
 
 interface Props {
     initialAdvice: string;
@@ -72,7 +73,12 @@ export default function FinancialAnalysisClient({ initialAdvice, initialError }:
                     disabled={loadingAudio}
                     className="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-medium"
                 >
-                    {(loadingAudio || isPending) ? <div className="flex items-center gap-2"><Spinner size='xs' /> <span>Loading</span></div> : audioRef.current ? (isPlaying ? 'Pause' : 'Play') : 'Speak'}
+                    {(loadingAudio || isPending)
+                        ? <div className="flex items-center gap-2"><Spinner size='xs' /> <span>Loading</span></div>
+                        : audioRef.current
+                            ? (isPlaying ? 'Pause' : 'Play')
+                            : <span className="inline-flex items-center gap-1">Speak <RxSpeakerLoud /></span>
+                    }
                 </button>
                 {audioRef.current && !loadingAudio && (
                     <span className="text-xs text-gray-500">{isPlaying ? 'Playing...' : 'Audio loaded'}</span>
