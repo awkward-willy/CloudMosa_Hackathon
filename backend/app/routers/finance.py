@@ -83,7 +83,7 @@ async def get_financial_advice(
             response = await client.post(
                 f"{settings.agent_base_url}/api/advice",
                 json=agent_request_data,
-                timeout=60,
+                timeout=120,
             )
             response.raise_for_status()
 
