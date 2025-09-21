@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useCallback, useTransition } from 'react';
+import { Spinner } from '@chakra-ui/react';
+import ReactMarkdown from 'react-markdown';
 import { fetchFinancialAnalysisAudio } from '@/app/actions/financialAnalysis/fetchFinancialAnalysisAudio';
 
 interface Props {
@@ -63,11 +65,6 @@ export default function FinancialAnalysisClient({ initialAdvice, initialError }:
 
     return (
         <section className="w-full max-w-3xl space-y-4 p-4">
-            <h1 className="text-lg font-bold text-gray-700">Financial Analysis</h1>
-            {error && <div className="rounded border border-red-300 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
-            <div className="whitespace-pre-wrap text-sm leading-relaxed bg-gray-50 p-4 rounded border border-gray-200 ">
-                {advice}
-            </div>
             <div className="flex items-center gap-3">
                 <button
                     type="button"
@@ -75,11 +72,15 @@ export default function FinancialAnalysisClient({ initialAdvice, initialError }:
                     disabled={loadingAudio}
                     className="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-medium"
                 >
-                    {(loadingAudio || isPending) ? 'Loading...' : audioRef.current ? (isPlaying ? 'Pause' : 'Play') : 'Speak'}
+                    {(loadingAudio || isPending) ? <div className="flex items-center gap-2"><Spinner size='xs' /> <span>Loading</span></div> : audioRef.current ? (isPlaying ? 'Pause' : 'Play') : 'Speak'}
                 </button>
                 {audioRef.current && !loadingAudio && (
                     <span className="text-xs text-gray-500">{isPlaying ? 'Playing...' : 'Audio loaded'}</span>
                 )}
+            </div>
+            {error && <div className="rounded border border-red-300 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+            <div className="prose prose-sm sm:prose-base dark:prose-invert max-w-none bg-gray-50 p-4 rounded border border-gray-200 ">
+                <ReactMarkdown>{advice}</ReactMarkdown>
             </div>
         </section>
     );
