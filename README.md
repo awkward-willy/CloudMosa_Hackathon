@@ -1,8 +1,8 @@
 # CloudMosa @ MeiChu Hackathon - CoinMind
 
-企業：CloudMosa Inc.
-組別：杯子濃湯
-組別編號：5
+- 企業：CloudMosa Inc.
+- 組別：杯子濃湯
+- 組別編號：5
 
 CoinMind 為一個針對 Cloud Phone 的財務助理與記帳展示專案。前端提供簡潔、鍵盤友善的 UI；後端提供認證、交易記錄與對「AI 財務顧問 Agent」的橋接；Agent 透過 LLM 生成每日理財小語與個人化建議，並可選擇產出語音。
 
