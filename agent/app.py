@@ -1,4 +1,8 @@
-from fastapi import FastAPI
+import logging
+import traceback
+
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
 from routers import advice_router, tips_router
 
@@ -15,6 +19,15 @@ app = FastAPI(
 # Include routers
 app.include_router(tips_router)
 app.include_router(advice_router)
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logging.error(f"500 Error: {str(exc)}\n{traceback.format_exc()}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal Server Error"},
+    )
 
 
 @app.get("/")

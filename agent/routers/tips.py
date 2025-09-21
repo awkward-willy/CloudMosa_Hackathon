@@ -1,3 +1,6 @@
+import logging
+import traceback
+
 from fastapi import APIRouter, HTTPException
 
 from models import TipModel
@@ -29,4 +32,5 @@ async def get_daily_tip(request: GetDailyTipRequest) -> str:
         return tip
 
     except Exception as e:
+        logging.error(f"500 Error in get_daily_tip: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Failed to generate tip: {str(e)}")

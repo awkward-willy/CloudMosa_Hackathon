@@ -32,5 +32,6 @@ class GetFinancialAdviceRequest(BaseModel):
         ..., description="List of user's transactions"
     )
     output_format: Literal["text", "audio"] = Field(
-        default="text", description="Output format: 'text' for plain text or 'audio' for voice"
+        default="text",
+        description="Output format: 'text' for plain text or 'audio' for voice",
     )

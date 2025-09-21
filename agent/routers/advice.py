@@ -1,7 +1,8 @@
+import logging
 import os
-import requests
-from typing import Union
+import traceback
 
+import requests
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
 
@@ -46,6 +47,9 @@ async def get_financial_advice(request: GetFinancialAdviceRequest):
         )
 
         if not advice:
+            logging.error(
+                f"500 Error: Failed to generate advice for user {request.user_uuid}"
+            )
             raise HTTPException(status_code=500, detail="Failed to generate advice")
 
         # Return text format
@@ -58,14 +62,14 @@ async def get_financial_advice(request: GetFinancialAdviceRequest):
             if not api_key:
                 raise HTTPException(
                     status_code=500,
-                    detail="TTS_API_KEY not found in environment variables"
+                    detail="TTS_API_KEY not found in environment variables",
                 )
 
             # Prepare the request to UnrealSpeech API
             url = "https://api.v8.unrealspeech.com/speech"
             headers = {
                 "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             }
 
             payload = {
@@ -95,23 +99,32 @@ async def get_financial_advice(request: GetFinancialAdviceRequest):
             return Response(
                 content=audio_content,
                 media_type="audio/mpeg",
-                headers={"Content-Disposition": f"attachment; filename=advice_{request.user_uuid}.mp3"}
+                headers={
+                    "Content-Disposition": f"attachment; filename=advice_{request.user_uuid}.mp3"
+                },
             )
 
         except requests.exceptions.RequestException as e:
+            logging.error(
+                f"500 Error in UnrealSpeech API call: {str(e)}\n{traceback.format_exc()}"
+            )
             raise HTTPException(
-                status_code=500,
-                detail=f"Failed to call UnrealSpeech API: {str(e)}"
+                status_code=500, detail=f"Failed to call UnrealSpeech API: {str(e)}"
             )
         except Exception as e:
+            logging.error(
+                f"500 Error in audio generation: {str(e)}\n{traceback.format_exc()}"
+            )
             raise HTTPException(
-                status_code=500,
-                detail=f"Failed to generate audio: {str(e)}"
+                status_code=500, detail=f"Failed to generate audio: {str(e)}"
             )
 
     except HTTPException:
         raise
     except Exception as e:
+        logging.error(
+            f"500 Error in get_financial_advice: {str(e)}\n{traceback.format_exc()}"
+        )
         raise HTTPException(
             status_code=500, detail=f"Failed to generate advice: {str(e)}"
         )
