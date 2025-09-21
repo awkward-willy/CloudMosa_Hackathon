@@ -59,7 +59,7 @@ async def get_financial_advice(
         )
 
         # Limit the number of transactions
-        recent_transactions = recent_transactions[:200]
+        recent_transactions = recent_transactions[:50]
 
         # Convert transactions to the format expected by the agent
         transaction_data = [
