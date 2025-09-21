@@ -58,6 +58,9 @@ async def get_financial_advice(
             user_id=current_user.id, days=request.days
         )
 
+        # Limit the number of transactions
+        recent_transactions = recent_transactions[:200]
+
         # Convert transactions to the format expected by the agent
         transaction_data = [
             {
